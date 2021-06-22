@@ -1,0 +1,574 @@
+{{ define "content" }}
+    <script>
+        $(document).ready(function () {
+            $('#list_view').hide();
+            $('#view_toggle').on('click', function () {
+                    $('#list_view, #grid_view').toggle("slow");
+                    let icon = $(this).find('i');
+
+                    if (icon.text() === 'view_list') {
+                        icon.text('view_module');
+                    } else {
+                        icon.text('view_list');
+                    }
+
+                }
+            )
+        });
+    </script>
+    <h1>Cluster details</h1>
+
+
+    <div class="row">
+        <div class="col-9">
+            <h6>
+                <a href="/clusters">Clusters</a> > {{ .Cluster.Name }}
+            </h6>
+        </div>
+        <div class="col-3">
+            <div class="float-right">
+                <a data-toggle="collapse" href="#collapseInfo" aria-expanded="false" aria-controls="collapseExample"
+                   class="eos-dark"><i class="eos-icons eos-24">keyboard_arrow_down</i></a>
+            </div>
+        </div>
+    </div>
+    <div class="border-top border-bottom mb-4">
+        <div class="row">
+            <div class="col-sm-7 border-right">
+                <div class="row mt-5 mb-5">
+                    <div class="col-3">
+                        <strong>Cluster name:</strong><br>
+                        <div class="text_muted">hana_cluster</div>
+                    </div>
+                    <div class="col-3">
+                        <strong>Pacemaker Status:</strong><br>
+                        <span class="badge badge-pill badge-primary ml-0">Healthy</span>
+                    </div>
+                    <div class="col-6">
+                        <strong>HANA system replication Status:</strong><br>
+                        True
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-5">
+                <div class="row mt-5 mb-5">
+                    <div class="col">
+                        <div class="text-center">
+                            <strong>CPU Utilization</strong><br>
+                            5%
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="text-center"><strong>Memory Utilization</strong><br>
+                            10%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row collapse" id="collapseInfo">
+            <div class="col-7 border-right">
+                <div class="row mt-5 mb-5">
+                    <div class="col-3">
+                        <strong>Checks</strong><br>
+                        <div class="text_muted">True</div>
+                    </div>
+                    <div class="col-3">
+                        <strong>Cluster wide:</strong><br>
+                        <div class="text_muted">True</div>
+                    </div>
+                    <div class="col-6">
+                        <strong>System replication status:</strong><br>
+                        <div class="text_muted">True</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-5">
+                <div class="row mt-5 mb-5">
+                    <div class="col">
+                        <div class="text-center">
+                            <strong>Cake</strong>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="text-center">
+                            <strong>Cake</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-9">
+            <h3>Site details</h3>
+        </div>
+        <div class="col-3">
+            <div class="float-right">
+                <a id="view_toggle" class="eos-dark" href=#> <i class="eos-icons eos-24">view_list</i></a>
+            </div>
+        </div>
+    </div>
+
+    <div id="grid_view" class="mt-4">
+        <div class="row row-cols-1 row-cols-sm-1 row-cols-md-2 row-cols-lg-2 row-cols-xl-3">
+            <div class="col mb-4">
+                <div class='card eos-table-card h-100'>
+                    <div class='card-header'>
+                        <span class='eos-table-card-title'>Site A: Rome</span>
+                        <div class='eos-table-card-controls'>
+                            <ul class='list-inline eos-table-actions'>
+                                <li class='list-inline-item'>
+                                    <a>
+                                        <i class='eos-icons eos-18 eos-dark'>
+                                            more_vert
+                                        </i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class='table-responsive h-100'>
+                        <table class='table eos-table'>
+                            <thead>
+                            <tr>
+                                <th scope='col'>Name</th>
+                                <th scope='col'>Role</th>
+                                <th scope='col'>Status</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    <i class="eos-icons eos-18 text-success">check_circle</i>Host_01
+                                </td>
+                                <td>
+                                    Primary
+                                </td>
+                                <td>
+                                    <span class='badge badge-pill badge-info'>HANA Primary</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <i class="eos-icons eos-18 text-success">check_circle</i>Host_02
+                                </td>
+                                <td>
+                                    Secondary
+                                </td>
+                                <td>
+                                    <span class='badge badge-pill badge-info'>HANA Secondary</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col mb-4">
+                <div class='card eos-table-card h-100'>
+                    <div class='card-header'>
+                        <span class='eos-table-card-title'>Site B: Trento</span>
+                        <div class='eos-table-card-controls'>
+                            <ul class='list-inline eos-table-actions'>
+                                <li class='list-inline-item'>
+                                    <a>
+                                        <i class='eos-icons eos-18 eos-dark'>
+                                            more_vert
+                                        </i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class='table-responsive h-100'>
+                        <table class='table eos-table'>
+                            <thead>
+                            <tr>
+                                <th scope='col'>Name</th>
+                                <th scope='col'>Role</th>
+                                <th scope='col'>Status</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    <i class="eos-icons eos-18 text-success">check_circle</i>Host_01
+                                </td>
+                                <td>
+                                    Primary
+                                </td>
+                                <td>
+                                    <span class='badge badge-pill badge-info'>HANA Primary</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <i class="eos-icons eos-18 text-success">check_circle</i>Host_02
+                                </td>
+                                <td>
+                                    Secondary
+                                </td>
+                                <td>
+                                    <span class='badge badge-pill badge-info'>HANA Secondary</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <i class="eos-icons eos-18 text-success">check_circle</i>Host_02
+                                </td>
+                                <td>
+                                    Secondary
+                                </td>
+                                <td>
+                                    <span class='badge badge-pill badge-info'>HANA Secondary</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col mb-4">
+                <div class='card eos-table-card h-100'>
+                    <div class='card-header'>
+                        <span class='eos-table-card-title'>Site C: Prague</span>
+                        <div class='eos-table-card-controls'>
+                            <ul class='list-inline eos-table-actions'>
+                                <li class='list-inline-item'>
+                                    <a>
+                                        <i class='eos-icons eos-18 eos-dark'>
+                                            more_vert
+                                        </i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class='table-responsive h-100'>
+                        <table class='table eos-table'>
+                            <thead>
+                            <tr>
+                                <th scope='col'>Name</th>
+                                <th scope='col'>Role</th>
+                                <th scope='col'>Status</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    <i class="eos-icons eos-18 text-success">check_circle</i>Host_01
+                                </td>
+                                <td>
+                                    Primary
+                                </td>
+                                <td>
+                                    <span class='badge badge-pill badge-info'>HANA Primary</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col mb-4">
+                <div class='card w-50 eos-table-card h-100'>
+                    <div class='card-header'>
+                        <span class='eos-table-card-title'>Not running</span>
+                        <div class='eos-table-card-controls'>
+                            <ul class='list-inline eos-table-actions'>
+                                <li class='list-inline-item'>
+                                    <a>
+                                        <i class='eos-icons eos-18 eos-dark'>
+                                            more_vert
+                                        </i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class='table-responsive h-100'>
+                        <table class='table eos-table'>
+                            <thead>
+                            <tr>
+                                <th scope='col'>Name</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    <i class="eos-icons eos-18 text-muted">do_not_disturb</i>Host_01
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="list_view" class="mt-4">
+        <div class='card eos-table-card'>
+            <div class='card-header'>
+                <span class='eos-table-card-title'>Site A: Rome</span>
+                <div class='eos-table-card-controls'>
+                    <ul class='list-inline eos-table-actions'>
+                        <li class='list-inline-item'>
+                            <a>
+                                <i class='eos-icons eos-24 eos-dark'>
+                                    keyboard_arrow_down
+                                </i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class='table-responsive h-100'>
+                <table class='table eos-table'>
+                    <thead>
+                    <tr>
+                        <th scope='col'>Name</th>
+                        <th scope='col'>Address</th>
+                        <th scope='col'>Role</th>
+                        <th scope='col'>Status</th>
+                        <th scope='col'><span class="float-right">Action</span></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>
+                            <i class="eos-icons eos-18 text-success">check_circle</i>Host_01
+                        </td>
+                        <td>
+                            10.74.1.10
+                        </td>
+                        <td>
+                            Primary
+                        </td>
+                        <td>
+                            <span class='badge badge-pill badge-info'>HANA Primary</span>
+                        </td>
+                        <td>
+                            <span class="float-right">
+                            <i class='eos-icons eos-18 eos-dark'>
+                                more_vert
+                            </i>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <i class="eos-icons eos-18 text-success">check_circle</i>Host_02
+                        </td>
+                        <td>
+                            10.74.1.11
+                        </td>
+                        <td>
+                            Secondary
+                        </td>
+                        <td>
+                            <span class='badge badge-pill badge-info'>HANA Secondary</span>
+                        </td>
+                        <td>
+                            <span class="float-right">
+                            <i class='eos-icons eos-18 eos-dark'>
+                                more_vert
+                            </i>
+                            </span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class='card eos-table-card mt-4'>
+            <div class='card-header'>
+                <span class='eos-table-card-title'>Site B: Trento</span>
+                <div class='eos-table-card-controls'>
+                    <ul class='list-inline eos-table-actions'>
+                        <li class='list-inline-item'>
+                            <a>
+                                <i class='eos-icons eos-24 eos-dark'>
+                                    keyboard_arrow_down
+                                </i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class='table-responsive'>
+                <table class='table eos-table'>
+                    <thead>
+                    <tr>
+                        <th scope='col'>Name</th>
+                        <th scope='col'>Address</th>
+                        <th scope='col'>Role</th>
+                        <th scope='col'>Status</th>
+                        <th scope='col'><span class="float-right">Action</span></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>
+                            <i class="eos-icons eos-18 text-success">check_circle</i>Host_01
+                        </td>
+                        <td>
+                            10.74.1.27
+                        </td>
+                        <td>
+                            Primary
+                        </td>
+                        <td>
+                            <span class='badge badge-pill badge-info'>HANA Primary</span>
+                        </td>
+                        <td>
+                            <span class="float-right">
+                            <i class='eos-icons eos-18 eos-dark'>
+                                more_vert
+                            </i>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <i class="eos-icons eos-18 text-success">check_circle</i>Host_02
+                        </td>
+                        <td>
+                            10.74.1.28
+                        </td>
+                        <td>
+                            Secondary
+                        </td>
+                        <td>
+                            <span class='badge badge-pill badge-info'>HANA Secondary</span>
+                        </td>
+                        <td>
+                            <span class="float-right">
+                            <i class='eos-icons eos-18 eos-dark'>
+                                more_vert
+                            </i>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <i class="eos-icons eos-18 text-success">check_circle</i>Host_03
+                        </td>
+                        <td>
+                            10.74.1.29
+                        </td>
+                        <td>
+                            Secondary
+                        </td>
+                        <td>
+                            <span class='badge badge-pill badge-info'>HANA Secondary</span>
+                        </td>
+                        <td>
+                            <span class="float-right">
+                            <i class='eos-icons eos-18 eos-dark'>
+                                more_vert
+                            </i>
+                            </span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class='card eos-table-card mt-4'>
+            <div class='card-header'>
+                <span class='eos-table-card-title'>Site C: Prague</span>
+                <div class='eos-table-card-controls'>
+                    <ul class='list-inline eos-table-actions'>
+                        <li class='list-inline-item'>
+                            <a>
+                                <i class='eos-icons eos-24 eos-dark'>
+                                    keyboard_arrow_down
+                                </i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class='table-responsive'>
+                <table class='table eos-table'>
+                    <thead>
+                    <tr>
+                        <th scope='col'>Name</th>
+                        <th scope='col'>Address</th>
+                        <th scope='col'>Role</th>
+                        <th scope='col'>Status</th>
+                        <th scope='col'><span class="float-right">Action</span></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>
+                            <i class="eos-icons eos-18 text-success">check_circle</i>Host_01
+                        </td>
+                        <td>
+                            10.74.1.10
+                        </td>
+                        <td>
+                            Primary
+                        </td>
+                        <td>
+                            <span class='badge badge-pill badge-info'>HANA Primary</span>
+                        </td>
+                        <td>
+                            <span class="float-right">
+                            <i class='eos-icons eos-18 eos-dark'>
+                                more_vert
+                            </i>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <i class="eos-icons eos-18 text-success">check_circle</i>Host_02
+                        </td>
+                        <td>
+                            10.74.1.11
+                        </td>
+                        <td>
+                            Secondary
+                        </td>
+                        <td>
+                            <span class='badge badge-pill badge-info'>HANA Secondary</span>
+                        </td>
+                        <td>
+                            <span class="float-right">
+                            <i class='eos-icons eos-18 eos-dark'>
+                                more_vert
+                            </i>
+                            </span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class='card eos-table-card mt-4'>
+            <div class='card-header'>
+                <span class='eos-table-card-title'>Not running</span>
+            </div>
+            <div class='table-responsive'>
+                <table class='table eos-table'>
+                    <thead>
+                    <tr>
+                        <th scope='col'>Name</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>
+                            <i class="eos-icons eos-18 text-muted">do_not_disturb</i>Host_01
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{{- end }}
