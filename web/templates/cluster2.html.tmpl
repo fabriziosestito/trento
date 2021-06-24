@@ -1,17 +1,11 @@
 {{ define "content" }}
     <script>
         $(document).ready(function () {
-            $('#list_view').hide();
-            $('#view_toggle').on('click', function () {
-                    $('#list_view, #grid_view').toggle("slow");
-                    let icon = $(this).find('i');
-
-                    if (icon.text() === 'view_list') {
-                        icon.text('view_module');
-                    } else {
-                        icon.text('view_list');
-                    }
-
+            $('#list-view').hide();
+            $('.list-grid-toggle').on('click', function () {
+                    $('#list-view, #grid-view').fadeToggle();
+                    $('.list-grid-toggle').toggleClass("list-view")
+                    $('.list-grid-toggle').toggleClass("grid-view")
                 }
             )
         });
@@ -28,7 +22,7 @@
         <div class="col-3">
             <div class="float-right">
                 <a data-toggle="collapse" href="#collapseInfo" aria-expanded="false" aria-controls="collapseExample"
-                   class="eos-dark"><i class="eos-icons eos-24">keyboard_arrow_down</i></a>
+                   class="text-dark collapse-toggle collapsed"></a>
             </div>
         </div>
     </div>
@@ -106,12 +100,12 @@
         </div>
         <div class="col-3">
             <div class="float-right">
-                <a id="view_toggle" class="eos-dark" href=#> <i class="eos-icons eos-24">view_list</i></a>
+                <a class="list-grid-toggle text-dark grid-view" href=#></a>
             </div>
         </div>
     </div>
 
-    <div id="grid_view" class="mt-4">
+    <div id="grid-view" class="mt-4">
         <div class="row row-cols-1 row-cols-sm-1 row-cols-md-2 row-cols-lg-2 row-cols-xl-3">
             <div class="col mb-4">
                 <div class='card eos-table-card h-100'>
@@ -308,7 +302,7 @@
             </div>
         </div>
     </div>
-    <div id="list_view" class="mt-4">
+    <div id="list-view" class="mt-4">
         <div class='card eos-table-card'>
             <div class='card-header'>
                 <span class='eos-table-card-title'>Site A: Rome</span>

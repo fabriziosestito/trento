@@ -16,3 +16,35 @@
 footer.footer-side-menu ul.footer-list {
   color: $eos-bc-gray-900;
 }
+
+.collapse-toggle:after {
+    font-family: 'eos-icons';
+    content: "keyboard_arrow_up";
+    float: right;
+    font-size: 24px;
+    font-weight: normal;
+}
+
+.collapse-toggle.collapsed:after {
+    font-family: 'eos-icons';
+    content: "keyboard_arrow_down";
+    float: right;
+    font-size: 24px;
+    font-weight: normal;
+}
+
+.list-grid-toggle.list-view:after {
+    font-family: 'eos-icons';
+    content: "view_module";
+    float: right;
+    font-size: 24px;
+    font-weight: normal;
+}
+
+.list-grid-toggle.grid-view:after {
+    font-family: 'eos-icons';
+    content: "view_list";
+    float: right;
+    font-size: 24px;
+    font-weight: normal;
+}
