@@ -21,7 +21,7 @@
         </div>
         <div class="col-3">
             <div class="float-right">
-                <a data-toggle="collapse" href="#collapseInfo" aria-expanded="false" aria-controls="collapseExample"
+                <a data-toggle="collapse" href=".collapse-info" aria-expanded="false" aria-controls="collapseExample"
                    class="text-dark collapse-toggle collapsed"></a>
             </div>
         </div>
@@ -42,49 +42,40 @@
                         <strong>HANA system replication Status:</strong><br>
                         True
                     </div>
-                </div>
-            </div>
-            <div class="col-sm-5">
-                <div class="row mt-5 mb-5">
-                    <div class="col">
-                        <div class="text-center">
-                            <strong>CPU Utilization</strong><br>
-                            5%
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="text-center"><strong>Memory Utilization</strong><br>
-                            10%
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row collapse" id="collapseInfo">
-            <div class="col-7 border-right">
-                <div class="row mt-5 mb-5">
-                    <div class="col-3">
+                    <div class="collapse collapse-info col-3 mt-5">
                         <strong>Checks</strong><br>
                         <div class="text_muted">True</div>
                     </div>
-                    <div class="col-3">
+                    <div class="collapse collapse-info col-3 mt-5">
                         <strong>Cluster wide:</strong><br>
                         <div class="text_muted">True</div>
                     </div>
-                    <div class="col-6">
+                    <div class="collapse collapse-info col-6 mt-5">
                         <strong>System replication status:</strong><br>
                         <div class="text_muted">True</div>
                     </div>
                 </div>
             </div>
-            <div class="col-5">
+            <div class="col-sm-5">
                 <div class="row mt-5 mb-5">
-                    <div class="col">
+                    <div class="col-6">
+                        <div class="text-center">
+                            <strong>CPU Utilization</strong><br>
+                            5%
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center"><strong>Memory Utilization</strong><br>
+                            10%
+                        </div>
+                    </div>
+
+                    <div class="collapse collapse-info col-6 mt-5">
                         <div class="text-center">
                             <strong>Cake</strong>
                         </div>
                     </div>
-                    <div class="col">
+                    <div class="collapse collapse-info col-6 mt-5">
                         <div class="text-center">
                             <strong>Cake</strong>
                         </div>
@@ -92,6 +83,18 @@
                 </div>
             </div>
         </div>
+        {{/*        <div class="row collapse" id="collapseInfo">*/}}
+        {{/*            <div class="col-7 border-right">*/}}
+        {{/*                <div class="row mt-5 mb-5">*/}}
+
+        {{/*                </div>*/}}
+        {{/*            </div>*/}}
+        {{/*            <div class="col-5">*/}}
+        {{/*                <div class="row mt-5 mb-5">*/}}
+
+        {{/*                </div>*/}}
+        {{/*            </div>*/}}
+        {{/*        </div>*/}}
     </div>
 
     <div class="row">
