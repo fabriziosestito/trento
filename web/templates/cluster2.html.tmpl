@@ -1,0 +1,472 @@
+{{ define "content" }}
+    <script>
+        $(document).ready(function () {
+            let now = new Date();
+            $("#last_update").html(now.toLocaleString());
+        });
+
+
+    </script>
+    <h1>Cluster details</h1>
+    <div class="row">
+        <div class="col">
+            <h6>
+                <a href="/clusters">Clusters</a> > {{ .Cluster.Name }}
+            </h6>
+        </div>
+        <div class="col text-right">
+            <i class="eos-icons eos-18 ">update</i> Last update:
+            <span id="last_update" class="text-nowrap">
+                Not available
+            </span>
+        </div>
+    </div>
+
+    <div class="border-bottom border-top mb-4">
+        <div class="row">
+            <div class="col-sm-9 border-right">
+                <div class="row mt-5 mb-5">
+                    <div class="col-3">
+                        <strong>Cluster name:</strong><br>
+                        <span class="text-muted">hana_cluster</span>
+                    </div>
+                    <div class="col-3">
+                        <strong>Cluster type:</strong><br>
+                        <span class="text-muted">HANA Scaleup</span>
+                    </div>
+                    <div class="col-6">
+                        <strong>HANA system replication mode:</strong><br>
+                        <span class="text-muted">Sync</span>
+                    </div>
+
+                    <div class="col-3 mt-5">
+                        <strong>Pacemaker status:</strong><br>
+                        <span class="badge badge-pill badge-primary ml-0">Healthy</span>
+                    </div>
+                    <div class="col-3 mt-5">
+                        <strong>SAPHanaSR health state:</strong><br>
+                        <i class="eos-icons eos-18 text-danger">fiber_manual_record</i><span class="text-muted">4</span>
+                    </div>
+                    <div class="col-6 mt-5">
+                        <strong>HANA secondary sync state:</strong><br>
+                        <span class="badge badge-pill badge-primary ml-0">SOK</span>
+                    </div>
+
+
+                    <div class="col-3 mt-5">
+                        <strong>Stonith type:</strong><br>
+                        <span class="text-muted">SBD</span>
+                    </div>
+                    <div class="col-3 mt-5">
+                        <strong>Global CIB time:</strong><br>
+                        <span class="text-muted"> Fri, 25 Jun 2021 10:34</span>
+                    </div>
+                    <div class="col-6 mt-5">
+                        <strong>HANA system replication operation mode:</strong><br>
+                        <div class="text-muted">Logreplay</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="mt-3">
+                    <h5>Status</h5>
+                    <div class="alert alert-inline alert-danger">
+                        <i class="eos-icons eos-18 alert-icon">error</i>
+                        <div class="alert-body">Critical</div>
+                        10
+                    </div>
+                    <div class="alert alert-inline alert-warning">
+                        <i class="eos-icons eos-18 alert-icon">warning</i>
+                        <div class="alert-body">Warning</div>
+                        3
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-10">
+            <h3>Pacemaker Site details</h3>
+        </div>
+        <div class="col-2">
+            <h4>Not Running</h4>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-10">
+            <div class="card eos-table-card">
+                <div class="card-header">
+                    <span class="eos-table-card-title">Site A name</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table eos-table">
+                        <thead>
+                        <tr>
+                            <th scope="col"></th>
+                            <th scope="col">Hostname</th>
+                            <th scope="col">IP</th>
+                            <th scope="col">Virtual IP</th>
+                            <th scope="col">Role</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Pacemaker resources</th>
+                            <th scope="col"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>
+                                <i class="eos-icons eos-18 text-success">check_circle</i>
+                            </td>
+                            <td>
+                                Host01
+                            </td>
+                            <td>
+                                10.74.1.10
+                            </td>
+                            <td>
+                                10.74.1.60
+                            </td>
+                            <td>
+                                Master
+                            </td>
+                            <td>
+                                <span class="badge badge-pill badge-info">HANA Primary</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-pill badge-secondary-alt">rsc_SAPHana_PRD_HD800</span>
+                                <span class="badge badge-pill badge-secondary-alt">ocf::suse:SAPHana</span>
+
+
+                            </td>
+                            <td>
+                                <button class="btn btn-secondary btn-sm" data-toggle="modal"
+                                        data-target="#exampleModal">
+                                    Details
+                                </button>
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                10.74.1.11
+                            </td>
+                            <td>
+                                10.74.1.51
+                            </td>
+                            <td>
+
+                            </td>
+                            <td></td>
+                            <td><span class="badge badge-pill badge-secondary-alt">Clone</span>
+                                <span class="badge badge-pill badge-secondary-alt">Master</span>
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                10.74.1.11
+                            </td>
+                            <td>
+                                10.74.1.51
+                            </td>
+                            <td>
+
+                            </td>
+                            <td></td>
+                            <td><span class="badge badge-pill badge-secondary-alt">rsc_SAPHanaTopology_PRD_HD800</span>
+                                <span class="badge badge-pill badge-secondary-alt">ocf::suse:SAPHanaTopology</span>
+                                <span class="badge badge-pill badge-secondary-alt">Clone</span>
+                            </td>
+                            <td></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card eos-table-card mt-4">
+                <div class="card-header">
+                    <span class="eos-table-card-title">Site B name</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table eos-table">
+                        <thead>
+                        <tr>
+                            <th scope="col"></th>
+                            <th scope="col">Hostname</th>
+                            <th scope="col">IP</th>
+                            <th scope="col">Virtual IP</th>
+                            <th scope="col">Role</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Pacemaker resources</th>
+                            <th scope="col"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>
+                                <i class="eos-icons eos-18 text-success">check_circle</i>
+                            </td>
+                            <td>
+                                Host01
+                            </td>
+                            <td>
+                                10.74.1.10
+                            </td>
+                            <td>
+                                10.74.1.60
+                            </td>
+                            <td>
+                                Master
+                            </td>
+                            <td>
+                                <span class="badge badge-pill badge-info">HANA Primary</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-pill badge-secondary-alt">rsc_SAPHana_PRD_HD800</span>
+                                <span class="badge badge-pill badge-secondary-alt">ocf::suse:SAPHana</span>
+
+
+                            </td>
+                            <td>
+                                <button class="btn btn-secondary btn-sm" data-toggle="modal"
+                                        data-target="#exampleModal">
+                                    Details
+                                </button>
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                10.74.1.11
+                            </td>
+                            <td>
+                                10.74.1.51
+                            </td>
+                            <td>
+
+                            </td>
+                            <td></td>
+                            <td><span class="badge badge-pill badge-secondary-alt">Clone</span>
+                                <span class="badge badge-pill badge-secondary-alt">Master</span>
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                10.74.1.11
+                            </td>
+                            <td>
+                                10.74.1.51
+                            </td>
+                            <td>
+
+                            </td>
+                            <td></td>
+                            <td><span class="badge badge-pill badge-secondary-alt">rsc_SAPHanaTopology_PRD_HD800</span>
+                                <span class="badge badge-pill badge-secondary-alt">ocf::suse:SAPHanaTopology</span>
+                                <span class="badge badge-pill badge-secondary-alt">Clone</span>
+                            </td>
+                            <td></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="mt-4">
+                <h3>User defined site</h3>
+            </div>
+            <div class="card eos-table-card mt-4">
+                <div class="card-header">
+                    <span class="eos-table-card-title">Site B name</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table eos-table">
+                        <thead>
+                        <tr>
+                            <th scope="col"></th>
+                            <th scope="col">Hostname</th>
+                            <th scope="col">IP</th>
+                            <th scope="col">Virtual IP</th>
+                            <th scope="col">Role</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Pacemaker resources</th>
+                            <th scope="col"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>
+                                <i class="eos-icons eos-18 text-success">check_circle</i>
+                            </td>
+                            <td>
+                                Host01
+                            </td>
+                            <td>
+                                10.74.1.10
+                            </td>
+                            <td>
+                                10.74.1.60
+                            </td>
+                            <td>
+                                Majority maker
+                            </td>
+                            <td>
+
+                            </td>
+                            <td></td>
+                            <td>
+                                <button class="btn btn-secondary btn-sm" data-toggle="modal"
+                                        data-target="#exampleModal">
+                                    Details
+                                </button>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                10.74.1.11
+                            </td>
+                            <td>
+                                10.74.1.51
+                            </td>
+                            <td>
+
+                            </td>
+                            <td></td>
+                            <td>
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                10.74.1.11
+                            </td>
+                            <td>
+                                10.74.1.51
+                            </td>
+                            <td>
+
+                            </td>
+                            <td></td>
+                            <td>
+                            </td>
+                            <td></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-2 border-top">
+            <span class="badge badge-pill badge-secondary">Prometheus</span>
+            <span class="badge badge-pill badge-secondary">Some other service</span>
+        </div>
+    </div>
+    <hr>
+
+    <h3>SBD/Stonith</h3>
+
+    <div class="card-deck mt-4">
+
+        <div class="card">
+            <div class="card-body">
+                <strong>Device name:</strong> Name<br>
+                <strong>Location:</strong> Azure Location
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <strong>Device name:</strong> Name<br>
+                <strong>Location:</strong> Azure Location
+            </div>
+        </div>
+
+    </div>
+
+    <div class="modal left fade" id="exampleModal" tabindex="" role="dialog" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title"><i class="eos-icons eos-18 text-success align-middle">check_circle</i>Host01</h2>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#">Attribute</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link disabled" href="#">Resources</a>
+                        </li>
+                    </ul>
+                    <div class='table-responsive'>
+                        <table class='table eos-table'>
+                            <thead>
+                            <tr>
+                                <th scope='col'>Attribute</th>
+                                <th scope='col'>Value</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    hana_prd_clone_state
+                                </td>
+                                <td>
+                                    PROMOTED
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    hana_prd_opd_mode
+                                </td>
+                                <td>
+                                    logreplay
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    hana_prd_roles
+                                </td>
+                                <td>
+                                    vmhana02
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    hana_prd_site
+                                </td>
+                                <td>
+                                    Site1
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+{{- end }}
