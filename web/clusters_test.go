@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"testing"
 
+	consulApi "github.com/hashicorp/consul/api"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/tdewolff/minify/v2"
 	"github.com/tdewolff/minify/v2/html"
@@ -13,7 +15,7 @@ import (
 	"github.com/trento-project/trento/internal/consul/mocks"
 )
 
-func TestClustersListHandler(t *testing.T) {
+func setupClustersTest() (*mocks.Client, *mocks.KV) {
 	listMap := map[string]interface{}{
 		"test_cluster": map[string]interface{}{
 			"cib": map[string]interface{}{
@@ -73,6 +75,12 @@ func TestClustersListHandler(t *testing.T) {
 	kv.On("ListMap", consul.KvClustersPath, consul.KvClustersPath).Return(listMap, nil)
 	consulInst.On("WaitLock", consul.KvClustersPath).Return(nil)
 
+	return consulInst, kv
+}
+
+func TestClustersListHandler(t *testing.T) {
+	consulInst, kv := setupClustersTest()
+
 	deps := DefaultDependencies()
 	deps.consul = consulInst
 
@@ -110,15 +118,39 @@ func TestClustersListHandler(t *testing.T) {
 	assert.Regexp(t, regexp.MustCompile("<td>2nd_cluster</td><td>2</td><td>10</td><td>.*passing.*</td>"), minified)
 }
 
+func TestClusterHandler(t *testing.T) {
+	consulInst, _ := setupClustersTest()
+
+	catalog := new(mocks.Catalog)
+	consulInst.On("Catalog").Return(catalog)
+	filter := &consulApi.QueryOptions{Filter: "Meta[\"trento-ha-cluster\"] == \"test_cluster\""}
+	catalog.On("Nodes", filter).Return(nil, nil, nil)
+
+	deps := DefaultDependencies()
+	deps.consul = consulInst
+
+	app, err := NewAppWithDeps("", 80, deps)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resp := httptest.NewRecorder()
+	req, err := http.NewRequest("GET", "/clusters/test_cluster", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Accept", "text/html")
+
+	app.ServeHTTP(resp, req)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 200, resp.Code)
+	assert.Contains(t, resp.Body.String(), "Cluster details")
+	assert.Contains(t, resp.Body.String(), "test_cluster")
+}
+
 func TestClusterHandler404Error(t *testing.T) {
-	var err error
-
-	kv := new(mocks.KV)
-	kv.On("ListMap", consul.KvClustersPath, consul.KvClustersPath).Return(nil, nil)
-
-	consulInst := new(mocks.Client)
-	consulInst.On("KV").Return(kv)
-	consulInst.On("WaitLock", consul.KvClustersPath).Return(nil)
+	consulInst, _ := setupClustersTest()
 
 	deps := DefaultDependencies()
 	deps.consul = consulInst
