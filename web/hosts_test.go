@@ -1,7 +1,6 @@
 package web
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -192,10 +191,8 @@ func TestHostHandler(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, 200, resp.Code)
-	assert.Contains(t, minified, "Host details")
-	assert.Regexp(t, regexp.MustCompile("<dd.*>foo</dd>"), minified)
-
-	fmt.Println(minified)
+	assert.Contains(t, resp.Body.String(), "Host details")
+	assert.Regexp(t, regexp.MustCompile("<dd.*>foo</dd>"), resp.Body.String())
 }
 
 func TestHostHandler404Error(t *testing.T) {
@@ -261,8 +258,6 @@ func TestHAChecksHandler(t *testing.T) {
 	assert.Equal(t, 200, resp.Code)
 	assert.Contains(t, minified, "HA Configuration Checker")
 	assert.Contains(t, minified, "<a href=/hosts/foo>foo</a>")
-
-	fmt.Println(minified)
 }
 
 func TestHAChecksHandler404Error(t *testing.T) {
