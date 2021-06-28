@@ -21,7 +21,9 @@ func setupHostsTest() *mocks.Client {
 			Datacenter: "dc1",
 			Address:    "192.168.1.1",
 			Meta: map[string]string{
-				"trento-sap-environments": "land1",
+				"trento-sap-environment": "env1",
+				"trento-sap-landscape":   "land1",
+				"trento-sap-system":      "sys1",
 			},
 		},
 		{
@@ -29,7 +31,7 @@ func setupHostsTest() *mocks.Client {
 			Datacenter: "dc",
 			Address:    "192.168.1.2",
 			Meta: map[string]string{
-				"trento-sap-environments": "land2",
+				"trento-sap-environment": "env2",
 			},
 		},
 	}
@@ -114,7 +116,7 @@ func setupHostsTest() *mocks.Client {
 
 	catalog.On("Node", "foo", (*consulApi.QueryOptions)(nil)).Return(&consulApi.CatalogNode{Node: nodes[0]}, nil, nil)
 	consulInst.On("WaitLock", "trento/v0/hosts/foo/sapsystems/").Return(nil)
-	kv.On("ListMap", "trento/v0/hosts/foo/sapsystems/", "trento/v0/hosts/foo/sapsystems/").Return(nil, nil)
+	kv.On("ListMap", "trento/v0/hosts/foo/sapsystems/", "trento/v0/hosts/foo/sapsystems/").Return(filters, nil)
 
 	return consulInst
 }
@@ -189,10 +191,13 @@ func TestHostHandler(t *testing.T) {
 		panic(err)
 	}
 
-	assert.NoError(t, err)
 	assert.Equal(t, 200, resp.Code)
-	assert.Contains(t, resp.Body.String(), "Host details")
-	assert.Regexp(t, regexp.MustCompile("<dd.*>foo</dd>"), resp.Body.String())
+	assert.Contains(t, minified, "Host details")
+	assert.Regexp(t, regexp.MustCompile("<dd.*>foo</dd>"), minified)
+	assert.Regexp(t, regexp.MustCompile("<a.*environments.*>env1</a>"), minified)
+	assert.Regexp(t, regexp.MustCompile("<a.*landscapes.*>land1</a>"), minified)
+	assert.Regexp(t, regexp.MustCompile("<a.*sapsystems.*>sys1</a>"), minified)
+	assert.Regexp(t, regexp.MustCompile("<span.*>passing</span>"), minified)
 }
 
 func TestHostHandler404Error(t *testing.T) {
@@ -243,21 +248,10 @@ func TestHAChecksHandler(t *testing.T) {
 
 	app.ServeHTTP(resp, req)
 
-	m := minify.New()
-	m.AddFunc("text/html", html.Minify)
-	m.Add("text/html", &html.Minifier{
-		KeepDefaultAttrVals: true,
-		KeepEndTags:         true,
-	})
-	minified, err := m.String("text/html", resp.Body.String())
-	if err != nil {
-		panic(err)
-	}
-
 	assert.NoError(t, err)
 	assert.Equal(t, 200, resp.Code)
-	assert.Contains(t, minified, "HA Configuration Checker")
-	assert.Contains(t, minified, "<a href=/hosts/foo>foo</a>")
+	assert.Contains(t, resp.Body.String(), "HA Configuration Checker")
+	assert.Contains(t, resp.Body.String(), "<a href=/hosts/foo>foo</a>")
 }
 
 func TestHAChecksHandler404Error(t *testing.T) {
