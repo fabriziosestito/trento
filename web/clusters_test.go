@@ -15,7 +15,7 @@ import (
 	"github.com/trento-project/trento/internal/consul/mocks"
 )
 
-func setupClustersTest() (*mocks.Client, *mocks.KV) {
+func setupClustersTest() *mocks.Client {
 	listMap := map[string]interface{}{
 		"test_cluster": map[string]interface{}{
 			"cib": map[string]interface{}{
@@ -75,11 +75,16 @@ func setupClustersTest() (*mocks.Client, *mocks.KV) {
 	kv.On("ListMap", consul.KvClustersPath, consul.KvClustersPath).Return(listMap, nil)
 	consulInst.On("WaitLock", consul.KvClustersPath).Return(nil)
 
-	return consulInst, kv
+	catalog := new(mocks.Catalog)
+	consulInst.On("Catalog").Return(catalog)
+	filter := &consulApi.QueryOptions{Filter: "Meta[\"trento-ha-cluster\"] == \"test_cluster\""}
+	catalog.On("Nodes", filter).Return(nil, nil, nil)
+
+	return consulInst
 }
 
 func TestClustersListHandler(t *testing.T) {
-	consulInst, kv := setupClustersTest()
+	consulInst := setupClustersTest()
 
 	deps := DefaultDependencies()
 	deps.consul = consulInst
@@ -97,9 +102,6 @@ func TestClustersListHandler(t *testing.T) {
 	}
 
 	app.ServeHTTP(resp, req)
-
-	consulInst.AssertExpectations(t)
-	kv.AssertExpectations(t)
 
 	m := minify.New()
 	m.AddFunc("text/html", html.Minify)
@@ -119,12 +121,7 @@ func TestClustersListHandler(t *testing.T) {
 }
 
 func TestClusterHandler(t *testing.T) {
-	consulInst, _ := setupClustersTest()
-
-	catalog := new(mocks.Catalog)
-	consulInst.On("Catalog").Return(catalog)
-	filter := &consulApi.QueryOptions{Filter: "Meta[\"trento-ha-cluster\"] == \"test_cluster\""}
-	catalog.On("Nodes", filter).Return(nil, nil, nil)
+	consulInst := setupClustersTest()
 
 	deps := DefaultDependencies()
 	deps.consul = consulInst
@@ -150,7 +147,7 @@ func TestClusterHandler(t *testing.T) {
 }
 
 func TestClusterHandler404Error(t *testing.T) {
-	consulInst, _ := setupClustersTest()
+	consulInst := setupClustersTest()
 
 	deps := DefaultDependencies()
 	deps.consul = consulInst

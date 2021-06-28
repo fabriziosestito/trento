@@ -14,7 +14,7 @@ import (
 	"github.com/trento-project/trento/internal/consul/mocks"
 )
 
-func setupEnvironmentsTest() (*mocks.Client, *mocks.Catalog) {
+func setupEnvironmentsTest() *mocks.Client {
 	nodes1 := []*consulApi.Node{
 		{
 			Node:       "node1",
@@ -142,11 +142,11 @@ func setupEnvironmentsTest() (*mocks.Client, *mocks.Catalog) {
 	health.On("Node", "node3", (*consulApi.QueryOptions)(nil)).Return(node3HealthChecks, nil, nil)
 	health.On("Node", "node4", (*consulApi.QueryOptions)(nil)).Return(node4HealthChecks, nil, nil)
 
-	return consulInst, catalog
+	return consulInst
 }
 
 func TestEnvironmentsListHandler(t *testing.T) {
-	consulInst, catalog := setupEnvironmentsTest()
+	consulInst := setupEnvironmentsTest()
 
 	deps := DefaultDependencies()
 	deps.consul = consulInst
@@ -165,9 +165,6 @@ func TestEnvironmentsListHandler(t *testing.T) {
 
 	app.ServeHTTP(resp, req)
 
-	consulInst.AssertExpectations(t)
-	catalog.AssertExpectations(t)
-
 	responseBody := minifyHtml(resp.Body.String())
 
 	assert.Equal(t, 200, resp.Code)
@@ -177,7 +174,7 @@ func TestEnvironmentsListHandler(t *testing.T) {
 }
 
 func TestLandscapesListHandler(t *testing.T) {
-	consulInst, catalog := setupEnvironmentsTest()
+	consulInst := setupEnvironmentsTest()
 
 	deps := DefaultDependencies()
 	deps.consul = consulInst
@@ -196,9 +193,6 @@ func TestLandscapesListHandler(t *testing.T) {
 
 	app.ServeHTTP(resp, req)
 
-	consulInst.AssertExpectations(t)
-	catalog.AssertExpectations(t)
-
 	responseBody := minifyHtml(resp.Body.String())
 
 	assert.Equal(t, 200, resp.Code)
@@ -208,7 +202,7 @@ func TestLandscapesListHandler(t *testing.T) {
 }
 
 func TestSAPSystemsListHandler(t *testing.T) {
-	consulInst, catalog := setupEnvironmentsTest()
+	consulInst := setupEnvironmentsTest()
 
 	deps := DefaultDependencies()
 	deps.consul = consulInst
@@ -227,9 +221,6 @@ func TestSAPSystemsListHandler(t *testing.T) {
 
 	app.ServeHTTP(resp, req)
 
-	consulInst.AssertExpectations(t)
-	catalog.AssertExpectations(t)
-
 	responseBody := minifyHtml(resp.Body.String())
 
 	assert.Equal(t, 200, resp.Code)
@@ -239,7 +230,7 @@ func TestSAPSystemsListHandler(t *testing.T) {
 }
 
 func TestLandscapeHandler(t *testing.T) {
-	consulInst, _ := setupEnvironmentsTest()
+	consulInst := setupEnvironmentsTest()
 
 	deps := DefaultDependencies()
 	deps.consul = consulInst
@@ -263,7 +254,7 @@ func TestLandscapeHandler(t *testing.T) {
 }
 
 func TestLandscapeHandler404Error(t *testing.T) {
-	consulInst, _ := setupEnvironmentsTest()
+	consulInst := setupEnvironmentsTest()
 
 	deps := DefaultDependencies()
 	deps.consul = consulInst
@@ -286,7 +277,7 @@ func TestLandscapeHandler404Error(t *testing.T) {
 }
 
 func TestEnvironmentHandler(t *testing.T) {
-	consulInst, _ := setupEnvironmentsTest()
+	consulInst := setupEnvironmentsTest()
 
 	deps := DefaultDependencies()
 	deps.consul = consulInst
@@ -310,7 +301,7 @@ func TestEnvironmentHandler(t *testing.T) {
 }
 
 func TestEnvironmentHandler404Error(t *testing.T) {
-	consulInst, _ := setupEnvironmentsTest()
+	consulInst := setupEnvironmentsTest()
 
 	deps := DefaultDependencies()
 	deps.consul = consulInst
@@ -333,7 +324,7 @@ func TestEnvironmentHandler404Error(t *testing.T) {
 }
 
 func TestSAPSystemHandler(t *testing.T) {
-	consulInst, _ := setupEnvironmentsTest()
+	consulInst := setupEnvironmentsTest()
 
 	deps := DefaultDependencies()
 	deps.consul = consulInst
@@ -357,7 +348,7 @@ func TestSAPSystemHandler(t *testing.T) {
 }
 
 func TestSAPSystemHandler404Error(t *testing.T) {
-	consulInst, _ := setupEnvironmentsTest()
+	consulInst := setupEnvironmentsTest()
 
 	deps := DefaultDependencies()
 	deps.consul = consulInst

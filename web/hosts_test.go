@@ -1,6 +1,7 @@
 package web
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -14,7 +15,7 @@ import (
 	"github.com/trento-project/trento/internal/consul/mocks"
 )
 
-func TestHostsListHandler(t *testing.T) {
+func setupHostsTest() *mocks.Client {
 	nodes := []*consulApi.Node{
 		{
 			Node:       "foo",
@@ -99,23 +100,32 @@ func TestHostsListHandler(t *testing.T) {
 
 	filterSys1 := &consulApi.QueryOptions{
 		Filter: "(Meta[\"trento-sap-environment\"] == \"env1\") and (Meta[\"trento-sap-landscape\"] == \"land1\") and (Meta[\"trento-sap-system\"] == \"sys1\")"}
-	catalog.On("Nodes", (filterSys1)).Return(nodes, nil, nil)
+	catalog.On("Nodes", filterSys1).Return(nodes, nil, nil)
 
 	filterSys2 := &consulApi.QueryOptions{
 		Filter: "(Meta[\"trento-sap-environment\"] == \"env1\") and (Meta[\"trento-sap-landscape\"] == \"land2\") and (Meta[\"trento-sap-system\"] == \"sys2\")"}
-	catalog.On("Nodes", (filterSys2)).Return(nodes, nil, nil)
+	catalog.On("Nodes", filterSys2).Return(nodes, nil, nil)
 
 	filterSys3 := &consulApi.QueryOptions{
 		Filter: "(Meta[\"trento-sap-environment\"] == \"env2\") and (Meta[\"trento-sap-landscape\"] == \"land3\") and (Meta[\"trento-sap-system\"] == \"sys3\")"}
-	catalog.On("Nodes", (filterSys3)).Return(nodes, nil, nil)
+	catalog.On("Nodes", filterSys3).Return(nodes, nil, nil)
 
 	health.On("Node", "foo", (*consulApi.QueryOptions)(nil)).Return(fooHealthChecks, nil, nil)
 	health.On("Node", "bar", (*consulApi.QueryOptions)(nil)).Return(barHealthChecks, nil, nil)
 
+	catalog.On("Node", "foo", (*consulApi.QueryOptions)(nil)).Return(&consulApi.CatalogNode{Node: nodes[0]}, nil, nil)
+	consulInst.On("WaitLock", "trento/v0/hosts/foo/sapsystems/").Return(nil)
+	kv.On("ListMap", "trento/v0/hosts/foo/sapsystems/", "trento/v0/hosts/foo/sapsystems/").Return(nil, nil)
+
+	return consulInst
+}
+
+func TestHostsListHandler(t *testing.T) {
+	consulInst := setupHostsTest()
+
 	deps := DefaultDependencies()
 	deps.consul = consulInst
 
-	var err error
 	app, err := NewAppWithDeps("", 80, deps)
 	if err != nil {
 		t.Fatal(err)
@@ -128,10 +138,6 @@ func TestHostsListHandler(t *testing.T) {
 	}
 
 	app.ServeHTTP(resp, req)
-
-	consulInst.AssertExpectations(t)
-	catalog.AssertExpectations(t)
-	health.AssertExpectations(t)
 
 	m := minify.New()
 	m.AddFunc("text/html", html.Minify)
@@ -153,9 +159,46 @@ func TestHostsListHandler(t *testing.T) {
 	assert.Regexp(t, regexp.MustCompile("<td>bar</td><td>192.168.1.2</td><td>.*land2.*</td><td>.*critical.*</td>"), minified)
 }
 
-func TestHostHandler404Error(t *testing.T) {
-	var err error
+func TestHostHandler(t *testing.T) {
+	consulInst := setupHostsTest()
 
+	deps := DefaultDependencies()
+	deps.consul = consulInst
+
+	app, err := NewAppWithDeps("", 80, deps)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resp := httptest.NewRecorder()
+	req, err := http.NewRequest("GET", "/hosts/foo", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Accept", "text/html")
+
+	app.ServeHTTP(resp, req)
+
+	m := minify.New()
+	m.AddFunc("text/html", html.Minify)
+	m.Add("text/html", &html.Minifier{
+		KeepDefaultAttrVals: true,
+		KeepEndTags:         true,
+	})
+	minified, err := m.String("text/html", resp.Body.String())
+	if err != nil {
+		panic(err)
+	}
+
+	assert.NoError(t, err)
+	assert.Equal(t, 200, resp.Code)
+	assert.Contains(t, minified, "Host details")
+	assert.Regexp(t, regexp.MustCompile("<dd.*>foo</dd>"), minified)
+
+	fmt.Println(minified)
+}
+
+func TestHostHandler404Error(t *testing.T) {
 	consulInst := new(mocks.Client)
 	catalog := new(mocks.Catalog)
 	catalog.On("Node", "foobar", (*consulApi.QueryOptions)(nil)).Return((*consulApi.CatalogNode)(nil), nil, nil)
@@ -183,9 +226,46 @@ func TestHostHandler404Error(t *testing.T) {
 	assert.Contains(t, resp.Body.String(), "Not Found")
 }
 
-func TestHAChecksHandler404(t *testing.T) {
-	var err error
+func TestHAChecksHandler(t *testing.T) {
+	consulInst := setupHostsTest()
 
+	deps := DefaultDependencies()
+	deps.consul = consulInst
+
+	app, err := NewAppWithDeps("", 80, deps)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resp := httptest.NewRecorder()
+	req, err := http.NewRequest("GET", "/hosts/foo/ha-checks", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Accept", "text/html")
+
+	app.ServeHTTP(resp, req)
+
+	m := minify.New()
+	m.AddFunc("text/html", html.Minify)
+	m.Add("text/html", &html.Minifier{
+		KeepDefaultAttrVals: true,
+		KeepEndTags:         true,
+	})
+	minified, err := m.String("text/html", resp.Body.String())
+	if err != nil {
+		panic(err)
+	}
+
+	assert.NoError(t, err)
+	assert.Equal(t, 200, resp.Code)
+	assert.Contains(t, minified, "HA Configuration Checker")
+	assert.Contains(t, minified, "<a href=/hosts/foo>foo</a>")
+
+	fmt.Println(minified)
+}
+
+func TestHAChecksHandler404Error(t *testing.T) {
 	consulInst := new(mocks.Client)
 	catalog := new(mocks.Catalog)
 	catalog.On("Node", "foobar", (*consulApi.QueryOptions)(nil)).Return((*consulApi.CatalogNode)(nil), nil, nil)
