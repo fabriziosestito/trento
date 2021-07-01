@@ -72,51 +72,6 @@ func clustersListMap() map[string]interface{} {
 	return listMap
 }
 
-func TestClustersListHandler(t *testing.T) {
-	consulInst := new(mocks.Client)
-	kv := new(mocks.KV)
-
-	consulInst.On("KV").Return(kv)
-
-	kv.On("ListMap", consul.KvClustersPath, consul.KvClustersPath).Return(clustersListMap(), nil)
-	consulInst.On("WaitLock", consul.KvClustersPath).Return(nil)
-
-	deps := DefaultDependencies()
-	deps.consul = consulInst
-
-	var err error
-	app, err := NewAppWithDeps("", 80, deps)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	resp := httptest.NewRecorder()
-	req, err := http.NewRequest("GET", "/clusters", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	app.ServeHTTP(resp, req)
-
-	consulInst.AssertExpectations(t)
-	kv.AssertExpectations(t)
-
-	m := minify.New()
-	m.AddFunc("text/html", html.Minify)
-	m.Add("text/html", &html.Minifier{
-		KeepDefaultAttrVals: true,
-		KeepEndTags:         true,
-	})
-	minified, err := m.String("text/html", resp.Body.String())
-	if err != nil {
-		panic(err)
-	}
-
-	assert.Equal(t, 200, resp.Code)
-	assert.Contains(t, minified, "Clusters")
-	assert.Regexp(t, regexp.MustCompile("<td>test_cluster</td><td></td><td>3</td><td>5</td><td>.*passing.*</td>"), minified)
-	assert.Regexp(t, regexp.MustCompile("<td>2nd_cluster</td><td></td><td>2</td><td>10</td><td>.*passing.*</td>"), minified)
-}
 
 
 func TestClusterHandler404Error(t *testing.T) {
