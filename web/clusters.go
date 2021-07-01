@@ -54,3 +54,33 @@ func NewClusterHandler(client consul.Client) gin.HandlerFunc {
 		})
 	}
 }
+
+func NewClusterHandler2(client consul.Client) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		clusterId := c.Param("id")
+
+		clusters, err := cluster.Load(client)
+		if err != nil {
+			_ = c.Error(err)
+			return
+		}
+
+		cluster, ok := clusters[clusterId]
+		if !ok {
+			_ = c.Error(NotFoundError("could not find cluster"))
+			return
+		}
+
+		filter_query := fmt.Sprintf("Meta[\"trento-ha-cluster-id\"] == \"%s\"", clusterId)
+		hosts, err := hosts.Load(client, filter_query, nil)
+		if err != nil {
+			_ = c.Error(err)
+			return
+		}
+
+		c.HTML(http.StatusOK, "cluster2.html.tmpl", gin.H{
+			"Cluster": cluster,
+			"Hosts":   hosts,
+		})
+	}
+}
