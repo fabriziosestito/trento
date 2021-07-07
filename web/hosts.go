@@ -40,16 +40,16 @@ func NewHealthContainer(hostList hosts.HostList) *HealthContainer {
 func NewHostListHandler(client consul.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		query := c.Request.URL.Query()
-		query_filter := hosts.CreateFilterMetaQuery(query)
-		health_filter := query["health"]
+		queryFilter := hosts.CreateFilterMetaQuery(query)
+		healthFilter := query["health"]
 
-		hosts, err := hosts.Load(client, query_filter, health_filter)
+		hosts, err := hosts.Load(client, queryFilter, healthFilter)
 		if err != nil {
 			_ = c.Error(err)
 			return
 		}
 
-		filters, err := loadFilters(client)
+		filters, err := loadHostsFilters(client)
 		if err != nil {
 			_ = c.Error(err)
 			return
@@ -67,8 +67,8 @@ func NewHostListHandler(client consul.Client) gin.HandlerFunc {
 	}
 }
 
-func loadFilters(client consul.Client) (map[string][]string, error) {
-	filter_data := make(map[string][]string)
+func loadHostsFilters(client consul.Client) (map[string][]string, error) {
+	filterData := make(map[string][]string)
 
 	envs, err := environments.Load(client)
 	if err != nil {
@@ -76,20 +76,20 @@ func loadFilters(client consul.Client) (map[string][]string, error) {
 	}
 
 	for envKey, envValue := range envs {
-		filter_data["environments"] = append(filter_data["environments"], envKey)
+		filterData["environments"] = append(filterData["environments"], envKey)
 		for landKey, landValue := range envValue.Landscapes {
-			filter_data["landscapes"] = append(filter_data["landscapes"], landKey)
+			filterData["landscapes"] = append(filterData["landscapes"], landKey)
 			for sysKey, _ := range landValue.SAPSystems {
-				filter_data["sapsystems"] = append(filter_data["sapsystems"], sysKey)
+				filterData["sapsystems"] = append(filterData["sapsystems"], sysKey)
 			}
 		}
 	}
 
-	sort.Strings(filter_data["environments"])
-	sort.Strings(filter_data["landscapes"])
-	sort.Strings(filter_data["sapsystems"])
+	sort.Strings(filterData["environments"])
+	sort.Strings(filterData["landscapes"])
+	sort.Strings(filterData["sapsystems"])
 
-	return filter_data, nil
+	return filterData, nil
 }
 
 func loadHealthChecks(client consul.Client, node string) ([]*consulApi.HealthCheck, error) {
