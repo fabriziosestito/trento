@@ -2,6 +2,7 @@ package cluster
 
 import (
 	"path"
+	"strings"
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
@@ -58,9 +59,27 @@ func Load(client consul.Client) (map[string]*Cluster, error) {
 
 	for entry, value := range entries {
 		cluster := &Cluster{}
-		mapstructure.Decode(value, &cluster)
+		err = mapstructure.Decode(value, &cluster)
+
+		if err != nil {
+			return nil, errors.Wrap(err, "could not decode cluster mapstructure")
+		}
+
 		clusters[entry] = cluster
 	}
 
 	return clusters, nil
+}
+
+func Filter(clusters map[string]*Cluster, name string) map[string]*Cluster {
+	filteredClusters := make(map[string]*Cluster)
+	for clusterId, cluster := range clusters {
+		nameFilter := name == "" || strings.Contains(cluster.Name, name)
+		// healthFilter := len(health) == 0 || internal.Contains(health, populatedHost.Health())
+
+		if nameFilter {
+			filteredClusters[clusterId] = cluster
+		}
+	}
+	return filteredClusters
 }

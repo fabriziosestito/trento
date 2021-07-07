@@ -40,14 +40,14 @@ func (n *Host) Name() string {
 }
 
 func (n *Host) TrentoMeta() map[string]string {
-	filtered_meta := make(map[string]string)
+	filteredMeta := make(map[string]string)
 
 	for key, value := range n.Node.Meta {
 		if strings.HasPrefix(key, TrentoPrefix) {
-			filtered_meta[key] = value
+			filteredMeta[key] = value
 		}
 	}
-	return filtered_meta
+	return filteredMeta
 }
 
 // todo: this method was rushed, needs to be completely rewritten to have the checker webservice decoupled in a dedicated HTTP client
@@ -110,19 +110,19 @@ func CreateFilterMetaQuery(query map[string][]string) string {
 	return strings.Join(filters, " and ")
 }
 
-func Load(client consul.Client, query_filter string, health_filter []string) (HostList, error) {
+func Load(client consul.Client, queryFilter string, healthFilter []string) (HostList, error) {
 	var hosts = HostList{}
 
-	query := &consulApi.QueryOptions{Filter: query_filter}
-	consul_nodes, _, err := client.Catalog().Nodes(query)
+	query := &consulApi.QueryOptions{Filter: queryFilter}
+	consulNodes, _, err := client.Catalog().Nodes(query)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not query Consul for nodes")
 	}
-	for _, node := range consul_nodes {
-		populated_host := &Host{*node, client}
+	for _, node := range consulNodes {
+		populatedHost := &Host{*node, client}
 		// This check could be done in the frontend maybe
-		if len(health_filter) == 0 || internal.Contains(health_filter, populated_host.Health()) {
-			hosts = append(hosts, populated_host)
+		if len(healthFilter) == 0 || internal.Contains(healthFilter, populatedHost.Health()) {
+			hosts = append(hosts, populatedHost)
 		}
 	}
 

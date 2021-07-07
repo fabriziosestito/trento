@@ -13,7 +13,11 @@ import (
 
 func NewClusterListHandler(client consul.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		query := c.Request.URL.Query()
+		nameFilter := query.Get("name")
+
 		clusters, err := cluster.Load(client)
+		clusters = cluster.Filter(clusters, nameFilter)
 		if err != nil {
 			_ = c.Error(err)
 			return
