@@ -9,6 +9,7 @@
                 <th scope='col'>Cloud provider</th>
                 <th scope='col'>Cluster</th>
                 <th scope='col'>System</th>
+                <th scope='col'>Tags</th>
             </tr>
             </thead>
             <tbody>
@@ -36,6 +37,12 @@
                             {{ $v }}
                         </a>
                         {{- end }}
+                    </td>
+                    <td>
+                        <select class="tags-input form-control" multiple="multiple">
+                            <option selected="selected">tag1</option>
+                            <option selected="selected">tag2</option>
+                        </select>
                     </td>
                 </tr>
             {{- else }}
