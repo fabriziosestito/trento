@@ -39,9 +39,7 @@
                         {{- end }}
                     </td>
                     <td>
-                        <select class="tags-input form-control" multiple="multiple">
-                            <option selected="selected">tag1</option>
-                            <option selected="selected">tag2</option>
+                        <select class="tags-input form-control" data-url="/api/hosts/{{ .Name }}/tags" multiple="multiple">
                         </select>
                     </td>
                 </tr>

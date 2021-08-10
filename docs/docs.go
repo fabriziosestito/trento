@@ -26,7 +26,6 @@ var doc = `{
     "paths": {
         "/api/hosts/{name}/tags": {
             "get": {
-                "description": "yabba",
                 "consumes": [
                     "application/json"
                 ],
@@ -47,14 +46,27 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/web.JSONTag"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/web.HttpError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/web.HttpError"
                         }
                     }
                 }
             },
             "post": {
-                "description": "yabba",
                 "consumes": [
                     "application/json"
                 ],
@@ -71,12 +83,12 @@ var doc = `{
                         "required": true
                     },
                     {
-                        "description": "The body to create a tag",
+                        "description": "The tag to create",
                         "name": "Body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/web.CreateHostTagHandlerRequest"
+                            "$ref": "#/definitions/web.JSONTag"
                         }
                     }
                 ],
@@ -84,8 +96,25 @@ var doc = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/web.JSONTag"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/web.HttpError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/web.HttpError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/web.HttpError"
                         }
                     }
                 }
@@ -93,7 +122,6 @@ var doc = `{
         },
         "/api/hosts/{name}/tags/{tag}": {
             "delete": {
-                "description": "yabba",
                 "consumes": [
                     "application/json"
                 ],
@@ -130,7 +158,10 @@ var doc = `{
         }
     },
     "definitions": {
-        "web.CreateHostTagHandlerRequest": {
+        "web.HttpError": {
+            "type": "object"
+        },
+        "web.JSONTag": {
             "type": "object",
             "required": [
                 "tag"

@@ -1,5 +1,7 @@
 definitions:
-  web.CreateHostTagHandlerRequest:
+  web.HttpError:
+    type: object
+  web.JSONTag:
     properties:
       tag:
         type: string
@@ -13,7 +15,6 @@ paths:
     get:
       consumes:
       - application/json
-      description: yabba
       parameters:
       - description: Host name
         in: path
@@ -26,39 +27,57 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties: true
-            type: object
+            items:
+              $ref: '#/definitions/web.JSONTag'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/web.HttpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/web.HttpError'
       summary: Get all tags that belong to a host
     post:
       consumes:
       - application/json
-      description: yabba
       parameters:
       - description: Host name
         in: path
         name: name
         required: true
         type: string
-      - description: The body to create a tag
+      - description: The tag to create
         in: body
         name: Body
         required: true
         schema:
-          $ref: '#/definitions/web.CreateHostTagHandlerRequest'
+          $ref: '#/definitions/web.JSONTag'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/web.JSONTag'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/web.HttpError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/web.HttpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/web.HttpError'
       summary: Add tag to host
   /api/hosts/{name}/tags/{tag}:
     delete:
       consumes:
       - application/json
-      description: yabba
       parameters:
       - description: Host name
         in: path

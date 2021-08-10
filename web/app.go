@@ -79,14 +79,14 @@ func NewAppWithDeps(host string, port int, deps Dependencies) (*App, error) {
 	engine.GET("/clusters/:id", NewClusterHandler(deps.consul))
 	engine.GET("/sapsystems", NewSAPSystemListHandler(deps.consul))
 	engine.GET("/sapsystems/:sid", NewSAPSystemHandler(deps.consul))
-	url := ginSwagger.URL("http://localhost:8080/swagger/doc.json")
-	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
+	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	apiGroup := engine.Group("/api")
 	{
 		apiGroup.GET("/ping", ApiPingHandler)
-		apiGroup.POST("/hosts/:name/tags", CreateHostTagHandler(deps.consul))
-		apiGroup.GET("/hosts/:name/tags", GetHostTagsHandler(deps.consul))
-		apiGroup.DELETE("/hosts/:name/tags/:tag", DeleteHostTagHandler(deps.consul))
+		apiGroup.POST("/hosts/:name/tags", ApiHostCreateTagHandler(deps.consul))
+		apiGroup.GET("/hosts/:name/tags", ApiHostGetTagsHandler(deps.consul))
+		apiGroup.DELETE("/hosts/:name/tags/:tag", ApiHosotDeleteTagHandler(deps.consul))
 	}
 
 	return app, nil
