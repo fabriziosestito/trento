@@ -12,6 +12,7 @@ import (
 	"github.com/trento-project/trento/internal/consul"
 	"github.com/trento-project/trento/internal/hosts"
 	"github.com/trento-project/trento/internal/sapsystem"
+	"github.com/trento-project/trento/internal/tags"
 )
 
 func NewHostsHealthContainer(hostList hosts.HostList) *HealthContainer {
@@ -151,5 +152,48 @@ func NewHAChecksHandler(client consul.Client) gin.HandlerFunc {
 			"Hostname": host.Name(),
 			"HAChecks": host.HAChecks(),
 		})
+	}
+}
+
+type CreateHostTagHandlerRequest struct {
+	Tag string `json:"tag" binding:"required"`
+}
+
+// CreateHostTagHandler godoc
+// @Summary Add tag to host
+// @Description yabba
+// @Accept json
+// @Produce json
+// @Param name path string true "Host name"
+// @Param Body body CreateHostTagHandlerRequest true "The body to create a tag"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/hosts/{name}/tags [post]
+func CreateHostTagHandler(client consul.Client) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		name := c.Param("name")
+
+		catalogNode, _, err := client.Catalog().Node(name, nil)
+		if err != nil {
+			_ = c.Error(err)
+			return
+		}
+
+		if catalogNode == nil {
+			_ = c.Error(NotFoundError("could not find host"))
+			return
+		}
+
+		var r CreateHostTagHandlerRequest
+
+		err = c.BindJSON(&r)
+		if err != nil {
+			_ = c.Error(err)
+			return
+		}
+
+		t := tags.NewTags(client, "hosts", name)
+		t.Create(r.Tag)
+
+		c.JSON(http.StatusOK, "ok")
 	}
 }

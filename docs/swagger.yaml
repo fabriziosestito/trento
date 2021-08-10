@@ -1,0 +1,38 @@
+definitions:
+  web.CreateHostTagHandlerRequest:
+    properties:
+      tag:
+        type: string
+    required:
+    - tag
+    type: object
+info:
+  contact: {}
+paths:
+  /api/hosts/{name}/tags:
+    post:
+      consumes:
+      - application/json
+      description: yabba
+      parameters:
+      - description: Host name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: The body to create a tag
+        in: body
+        name: Body
+        required: true
+        schema:
+          $ref: '#/definitions/web.CreateHostTagHandlerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Add tag to host
+swagger: "2.0"
