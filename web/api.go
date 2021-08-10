@@ -92,7 +92,7 @@ func ApiHostGetTagsHandler(client consul.Client) gin.HandlerFunc {
 	}
 }
 
-// ApiHosotDeleteTagHandler godoc
+// ApiHostDeleteTagHandler godoc
 // @Summary Delete a specific tag that belongs to a host
 // @Accept json
 // @Produce json
@@ -100,7 +100,7 @@ func ApiHostGetTagsHandler(client consul.Client) gin.HandlerFunc {
 // @Param tag path string true "Tag name"
 // @Success 204 {object} map[string]interface{}
 // @Router /api/hosts/{name}/tags/{tag} [delete]
-func ApiHosotDeleteTagHandler(client consul.Client) gin.HandlerFunc {
+func ApiHostDeleteTagHandler(client consul.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		name := c.Param("name")
 		tag := c.Param("tag")
@@ -117,7 +117,7 @@ func ApiHosotDeleteTagHandler(client consul.Client) gin.HandlerFunc {
 		}
 
 		t := tags.NewTags(client, "hosts", name)
-		t.Delete(tag)
+		err = t.Delete(tag)
 
 		if err != nil {
 			_ = c.Error(err)

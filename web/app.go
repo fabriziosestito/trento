@@ -86,7 +86,7 @@ func NewAppWithDeps(host string, port int, deps Dependencies) (*App, error) {
 		apiGroup.GET("/ping", ApiPingHandler)
 		apiGroup.POST("/hosts/:name/tags", ApiHostCreateTagHandler(deps.consul))
 		apiGroup.GET("/hosts/:name/tags", ApiHostGetTagsHandler(deps.consul))
-		apiGroup.DELETE("/hosts/:name/tags/:tag", ApiHosotDeleteTagHandler(deps.consul))
+		apiGroup.DELETE("/hosts/:name/tags/:tag", ApiHostDeleteTagHandler(deps.consul))
 	}
 
 	return app, nil

@@ -1,3 +1,6 @@
+{{ define "additional_scripts" }}
+    <script src="/static/frontend/assets/js/tags.js"></script>
+{{ end }}
 {{ define "hosts_table" }}
     <div class='table-responsive'>
         <table class='table eos-table'>
@@ -39,7 +42,8 @@
                         {{- end }}
                     </td>
                     <td>
-                        <select class="tags-input form-control" data-url="/api/hosts/{{ .Name }}/tags" multiple="multiple">
+                        <select class="tags-input form-control" data-url="/api/hosts/{{ .Name }}/tags"
+                                multiple="multiple">
                         </select>
                     </td>
                 </tr>
