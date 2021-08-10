@@ -187,13 +187,86 @@ func CreateHostTagHandler(client consul.Client) gin.HandlerFunc {
 
 		err = c.BindJSON(&r)
 		if err != nil {
-			_ = c.Error(err)
+			_ = c.Error(UnprocessableEntityError("unable to parse JSON body"))
 			return
 		}
 
 		t := tags.NewTags(client, "hosts", name)
 		t.Create(r.Tag)
 
-		c.JSON(http.StatusOK, "ok")
+		res := map[string]interface{}{
+			"tag": r.Tag,
+		}
+		c.JSON(http.StatusCreated, res)
+	}
+}
+
+// GetHostTagsHandler godoc
+// @Summary Get all tags that belong to a host
+// @Description yabba
+// @Accept json
+// @Produce json
+// @Param name path string true "Host name"
+// @Success 200 {object} map[string]interface{}
+// @Router /api/hosts/{name}/tags [get]
+func GetHostTagsHandler(client consul.Client) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		name := c.Param("name")
+
+		catalogNode, _, err := client.Catalog().Node(name, nil)
+		if err != nil {
+			_ = c.Error(err)
+			return
+		}
+
+		if catalogNode == nil {
+			_ = c.Error(NotFoundError("could not find host"))
+			return
+		}
+
+		t := tags.NewTags(client, "hosts", name)
+		tagsList, err := t.GetAll()
+		if err != nil {
+			_ = c.Error(err)
+			return
+		}
+
+		c.JSON(http.StatusOK, tagsList)
+	}
+}
+
+// DeleteHostTagHandler godoc
+// @Summary Delete a specific tag that belongs to a host
+// @Description yabba
+// @Accept json
+// @Produce json
+// @Param name path string true "Host name"
+// @Success 204 {object} map[string]interface{}
+// @Router /api/hosts/{name}/tags/{tagname} [delete]
+func DeleteHostTagHandler(client consul.Client) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		name := c.Param("name")
+		tag := c.Param("tagname")
+
+		catalogNode, _, err := client.Catalog().Node(name, nil)
+		if err != nil {
+			_ = c.Error(err)
+			return
+		}
+
+		if catalogNode == nil {
+			_ = c.Error(NotFoundError("could not find host"))
+			return
+		}
+
+		t := tags.NewTags(client, "hosts", name)
+		t.Delete(tag)
+
+		if err != nil {
+			_ = c.Error(err)
+			return
+		}
+
+		c.JSON(http.StatusNoContent, nil)
 	}
 }

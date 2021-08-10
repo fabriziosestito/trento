@@ -62,6 +62,14 @@ func NotFoundError(msg string) *HttpError {
 	}
 }
 
+func UnprocessableEntityError(msg string) *HttpError {
+	return &HttpError{
+		msg,
+		http.StatusUnprocessableEntity,
+		"error.html.tmpl",
+	}
+}
+
 func InternalServerError(msg string) *HttpError {
 	return &HttpError{
 		msg,
