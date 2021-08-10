@@ -166,7 +166,7 @@ type CreateHostTagHandlerRequest struct {
 // @Produce json
 // @Param name path string true "Host name"
 // @Param Body body CreateHostTagHandlerRequest true "The body to create a tag"
-// @Success 200 {object} map[string]interface{}
+// @Success 201 {object} map[string]interface{}
 // @Router /api/hosts/{name}/tags [post]
 func CreateHostTagHandler(client consul.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -241,12 +241,13 @@ func GetHostTagsHandler(client consul.Client) gin.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Param name path string true "Host name"
+// @Param tag path string true "Tag name"
 // @Success 204 {object} map[string]interface{}
-// @Router /api/hosts/{name}/tags/{tagname} [delete]
+// @Router /api/hosts/{name}/tags/{tag} [delete]
 func DeleteHostTagHandler(client consul.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		name := c.Param("name")
-		tag := c.Param("tagname")
+		tag := c.Param("tag")
 
 		catalogNode, _, err := client.Catalog().Node(name, nil)
 		if err != nil {

@@ -10,6 +10,25 @@ info:
   contact: {}
 paths:
   /api/hosts/{name}/tags:
+    get:
+      consumes:
+      - application/json
+      description: yabba
+      parameters:
+      - description: Host name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all tags that belong to a host
     post:
       consumes:
       - application/json
@@ -29,10 +48,35 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
             additionalProperties: true
             type: object
       summary: Add tag to host
+  /api/hosts/{name}/tags/{tag}:
+    delete:
+      consumes:
+      - application/json
+      description: yabba
+      parameters:
+      - description: Host name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Tag name
+        in: path
+        name: tag
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a specific tag that belongs to a host
 swagger: "2.0"
