@@ -6,6 +6,7 @@ require (
 	github.com/ClusterLabs/ha_cluster_exporter v0.0.0-20210420075709-eb4566acab09
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/aquasecurity/bench-common v0.4.4
+	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/dustinkirkland/golang-petname v0.0.0-20191129215211-8e5a1ed0cff0
 	github.com/gin-gonic/gin v1.7.0
 	github.com/go-openapi/jsonreference v0.19.6 // indirect
@@ -31,6 +32,7 @@ require (
 	github.com/vektra/mockery/v2 v2.9.0
 	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d // indirect
 	golang.org/x/sys v0.0.0-20210809222454-d867a43fc93e // indirect
+	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.5 // indirect
 )
 

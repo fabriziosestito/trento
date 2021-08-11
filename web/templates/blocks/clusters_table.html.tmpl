@@ -1,27 +1,36 @@
+{{ define "additional_scripts" }}
+    <script src="/static/frontend/assets/js/tags.js"></script>
+{{ end }}
 {{ define "clusters_table" }}
     <div class='table-responsive'>
         <table class='table eos-table'>
             <thead>
             <tr>
                 <th scope='col'></th>
-                <th scope='col'>SID</th>
                 <th scope='col'>Cluster name</th>
                 <th scope='col'>Cluster Id</th>
                 <th scope='col'>Cluster type</th>
+                <th scope='col'>SID</th>
                 <th scope='col'>Nr. Hosts</th>
                 <th scope='col'>Nr. Resources</th>
+                <th scope='col'>Tags</th>
             </tr>
             </thead>
             <tbody>
             {{- range . }}
-                <tr class='clickable' onclick="window.location='/clusters/{{ .Id }}'">
+                <tr>
                     <td class="row-status">{{ template "health_icon" .Health }}</td>
-                    <td>{{- range $i, $v := .SIDs }}{{- if $i }},{{- end }} {{ . }}{{- end }}</td>
-                    <td>{{ .Name }}</td>
-                    <td>{{ .Id }}</td>
+                    <td><a href="/clusters/{{ .Id }}">{{ .Name }}</a></td>
+                    <td><a href="/clusters/{{ .Id }}">{{ .Id }}</a></td>
                     <td>{{ .Type }}</td>
+                    <td>{{- range $i, $v := .SIDs }}{{- if $i }},{{- end }} {{ . }}{{- end }}</td>
                     <td>{{ .HostsNumber }}</td>
                     <td>{{ .ResourcesNumber }}</td>
+                    <td>
+                        <select class="tags-input form-control" data-url="/api/clusters/{{ .Id }}/tags"
+                                    multiple="multiple">
+                        </select>
+                    </td>
                 </tr>
             {{- else }}
                 {{ template "empty_table_body" 7 }}

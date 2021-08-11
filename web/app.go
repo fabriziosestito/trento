@@ -45,19 +45,17 @@ func NewApp(host string, port int) (*App, error) {
 	return NewAppWithDeps(host, port, DefaultDependencies())
 }
 
-// @title Gin Swagger Example API
+// @title Trento API
 // @version 1.0
-// @description This is a sample server server.
-// @termsOfService http://swagger.io/terms/
+// @description Trento API
 
-// @contact.name API Support
-// @contact.url http://www.swagger.io/support
-// @contact.email support@swagger.io
-
+// @contact.name Trento Project
+// @contact.url https://www.trento-project.io
+// @contact.email  trento-project@suse.com
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host localhost:3000
+// @host localhost:8080
 // @BasePath /
 // @schemes http
 func NewAppWithDeps(host string, port int, deps Dependencies) (*App, error) {
@@ -85,8 +83,12 @@ func NewAppWithDeps(host string, port int, deps Dependencies) (*App, error) {
 	{
 		apiGroup.GET("/ping", ApiPingHandler)
 		apiGroup.POST("/hosts/:name/tags", ApiHostCreateTagHandler(deps.consul))
-		apiGroup.GET("/hosts/:name/tags", ApiHostGetTagsHandler(deps.consul))
+		apiGroup.GET("/hosts/:name/tags", ApiHostListTagHandler(deps.consul))
 		apiGroup.DELETE("/hosts/:name/tags/:tag", ApiHostDeleteTagHandler(deps.consul))
+
+		apiGroup.POST("/clusters/:id/tags", ApiClusterCreateTagHandler(deps.consul))
+		apiGroup.GET("/clusters/:id/tags", ApiClusterListTagHandler(deps.consul))
+		apiGroup.DELETE("/clusters/:id/tags/:tag", ApiClusterDeleteTagHandler(deps.consul))
 	}
 
 	return app, nil

@@ -1,6 +1,4 @@
 definitions:
-  web.HttpError:
-    type: object
   web.JSONTag:
     properties:
       tag:
@@ -33,11 +31,15 @@ paths:
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/web.HttpError'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/web.HttpError'
+            additionalProperties:
+              type: string
+            type: object
       summary: Get all tags that belong to a host
     post:
       consumes:
@@ -64,15 +66,21 @@ paths:
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/web.HttpError'
+            additionalProperties:
+              type: string
+            type: object
         "422":
           description: Unprocessable Entity
           schema:
-            $ref: '#/definitions/web.HttpError'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/web.HttpError'
+            additionalProperties:
+              type: string
+            type: object
       summary: Add tag to host
   /api/hosts/{name}/tags/{tag}:
     delete:

@@ -36,7 +36,7 @@
 
             {{ template "health_filter" }}
         </div>
-        {{ template "hosts_table" .Hosts }}
+        {{ template "hosts_table" . }}
         {{ template "pagination" .Pagination }}
     </div>
 {{ end }}

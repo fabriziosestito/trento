@@ -12,6 +12,7 @@ import (
 	"github.com/trento-project/trento/internal/consul"
 	"github.com/trento-project/trento/internal/hosts"
 	"github.com/trento-project/trento/internal/sapsystem"
+	"github.com/trento-project/trento/internal/tags"
 )
 
 func NewHostsHealthContainer(hostList hosts.HostList) *HealthContainer {
@@ -49,12 +50,40 @@ func NewHostListHandler(client consul.Client) gin.HandlerFunc {
 		pagination := NewPaginationWithStrings(len(hostList), page, perPage)
 		firstElem, lastElem := pagination.GetSliceNumbers()
 
+		clusterTags := make(map[string][]string)
+		hostTags := make(map[string][]string)
+
+		for _, h := range hostList {
+			t := tags.NewTags(client, "hosts", h.Name())
+			ht, err := t.GetAll()
+
+			if err != nil {
+				_ = c.Error(err)
+				return
+			}
+
+			hostTags[h.Name()] = ht
+
+			if clusterId, ok := h.TrentoMeta()["trento-ha-cluster-id"]; ok {
+				t := tags.NewTags(client, "clusters", clusterId)
+				ct, err := t.GetAll()
+
+				if err != nil {
+					_ = c.Error(err)
+					return
+				}
+				clusterTags[h.Name()] = ct
+			}
+		}
+
 		c.HTML(http.StatusOK, "hosts.html.tmpl", gin.H{
 			"Hosts":           hostList[firstElem:lastElem],
 			"SIDs":            getAllSIDs(hostList),
 			"AppliedFilters":  query,
 			"HealthContainer": hContainer,
 			"Pagination":      pagination,
+			"ClusterTags":     clusterTags,
+			"HostTags":        hostTags,
 		})
 	}
 }
