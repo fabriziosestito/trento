@@ -209,6 +209,7 @@ jobs:
       - name: Set environment variables
         run: |
           if [[ ${{ github.event_name }} == 'release' ]]; then
+            echo "Releasing"
             echo "IMAGE_TAG=rolling" >> $GITHUB_ENV
           else
             echo "IMAGE_TAG=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
