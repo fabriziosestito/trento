@@ -5,6 +5,10 @@ on:
   release:
     types: [ published ]
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  
 jobs:
   build:
     runs-on: ubuntu-20.04
@@ -194,6 +198,7 @@ jobs:
         with:
           files: "trento-*"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+
 
   build-and-push-image:
   # TODO: conditions on merge on main and on release and on manual
