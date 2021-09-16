@@ -200,7 +200,7 @@ jobs:
     env:
       REGISTRY: ghcr.io
       IMAGE_NAME: ${{ github.repository }}
-      IMAGE_TAG: "${{ github.event_name == 'release' && 'rolling' || github.event.release.tag_name }}"
+      IMAGE_TAG: "${{ github.event_name == 'release' && github.event.release.tag_name || 'rolling' }}"
     runs-on: ubuntu-latest
     permissions:
       contents: read
