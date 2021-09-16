@@ -3,7 +3,7 @@ on:
   pull_request:
   workflow_dispatch:
   release:
-    types: [ published ]
+    types: [published]
 
 jobs:
   build:
@@ -57,9 +57,9 @@ jobs:
         with:
           name: trento-amd64-binary
           path: build/trento-amd64.gz
-          
+
   consul-cleanup:
-    runs-on: [ self-hosted, vmmonitoring ]
+    runs-on: [self-hosted, vmmonitoring]
     needs: build
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     steps:
@@ -68,7 +68,7 @@ jobs:
         uses: ./.github/actions/consul_cleanup
 
   deploy-hana01:
-    runs-on: [ self-hosted, vmhana01 ]
+    runs-on: [self-hosted, vmhana01]
     needs: consul-cleanup
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     steps:
@@ -84,7 +84,7 @@ jobs:
           role: agent
 
   deploy-hana02:
-    runs-on: [ self-hosted, vmhana02 ]
+    runs-on: [self-hosted, vmhana02]
     needs: consul-cleanup
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     steps:
@@ -100,7 +100,7 @@ jobs:
           role: agent
 
   deploy-monitoring:
-    runs-on: [ self-hosted, vmmonitoring ]
+    runs-on: [self-hosted, vmmonitoring]
     needs: consul-cleanup
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     steps:
@@ -115,11 +115,10 @@ jobs:
         with:
           role: web
 
-
-# TODO: This duplication is going to be removed once we make use of the installer
-# in the CI
+  # TODO: This duplication is going to be removed once we make use of the installer
+  # in the CI
   deploy-netweaver01:
-    runs-on: [ self-hosted, vmnetweaver01 ]
+    runs-on: [self-hosted, vmnetweaver01]
     needs: consul-cleanup
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     steps:
@@ -135,7 +134,7 @@ jobs:
           role: agent
 
   deploy-netweaver02:
-    runs-on: [ self-hosted, vmnetweaver02 ]
+    runs-on: [self-hosted, vmnetweaver02]
     needs: consul-cleanup
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     steps:
@@ -151,7 +150,7 @@ jobs:
           role: agent
 
   deploy-netweaver03:
-    runs-on: [ self-hosted, vmnetweaver03 ]
+    runs-on: [self-hosted, vmnetweaver03]
     needs: consul-cleanup
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     steps:
@@ -167,7 +166,7 @@ jobs:
           role: agent
 
   deploy-netweaver04:
-    runs-on: [ self-hosted, vmnetweaver04 ]
+    runs-on: [self-hosted, vmnetweaver04]
     needs: consul-cleanup
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     steps:
@@ -196,9 +195,11 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   build-and-push-image:
-  # TODO: conditions on merge on main and on release and on manual
-  # get the tag on release!
-    # if: github.event.release
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+      IMAGE_TAG: "${{ github.event_name == 'release' && github.event.release.tag_name || 'rolling' }}"
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -207,7 +208,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
       - name: Log in to the Container registry
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
         with:
@@ -226,5 +228,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
