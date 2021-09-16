@@ -3,12 +3,13 @@ on:
   pull_request:
   workflow_dispatch:
   release:
-    types: [ published ]
+    types: [published]
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  
+  IMAGE_TAG: "rolling"
+
 jobs:
   build:
     runs-on: ubuntu-20.04
@@ -61,9 +62,9 @@ jobs:
         with:
           name: trento-amd64-binary
           path: build/trento-amd64.gz
-          
+
   consul-cleanup:
-    runs-on: [ self-hosted, vmmonitoring ]
+    runs-on: [self-hosted, vmmonitoring]
     needs: build
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     steps:
@@ -72,7 +73,7 @@ jobs:
         uses: ./.github/actions/consul_cleanup
 
   deploy-hana01:
-    runs-on: [ self-hosted, vmhana01 ]
+    runs-on: [self-hosted, vmhana01]
     needs: consul-cleanup
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     steps:
@@ -88,7 +89,7 @@ jobs:
           role: agent
 
   deploy-hana02:
-    runs-on: [ self-hosted, vmhana02 ]
+    runs-on: [self-hosted, vmhana02]
     needs: consul-cleanup
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     steps:
@@ -104,7 +105,7 @@ jobs:
           role: agent
 
   deploy-monitoring:
-    runs-on: [ self-hosted, vmmonitoring ]
+    runs-on: [self-hosted, vmmonitoring]
     needs: consul-cleanup
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     steps:
@@ -119,11 +120,10 @@ jobs:
         with:
           role: web
 
-
-# TODO: This duplication is going to be removed once we make use of the installer
-# in the CI
+  # TODO: This duplication is going to be removed once we make use of the installer
+  # in the CI
   deploy-netweaver01:
-    runs-on: [ self-hosted, vmnetweaver01 ]
+    runs-on: [self-hosted, vmnetweaver01]
     needs: consul-cleanup
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     steps:
@@ -139,7 +139,7 @@ jobs:
           role: agent
 
   deploy-netweaver02:
-    runs-on: [ self-hosted, vmnetweaver02 ]
+    runs-on: [self-hosted, vmnetweaver02]
     needs: consul-cleanup
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     steps:
@@ -155,7 +155,7 @@ jobs:
           role: agent
 
   deploy-netweaver03:
-    runs-on: [ self-hosted, vmnetweaver03 ]
+    runs-on: [self-hosted, vmnetweaver03]
     needs: consul-cleanup
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     steps:
@@ -171,7 +171,7 @@ jobs:
           role: agent
 
   deploy-netweaver04:
-    runs-on: [ self-hosted, vmnetweaver04 ]
+    runs-on: [self-hosted, vmnetweaver04]
     needs: consul-cleanup
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     steps:
@@ -199,17 +199,21 @@ jobs:
           files: "trento-*"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-
   build-and-push-image:
-  # TODO: conditions on merge on main and on release and on manual
-  # get the tag on release!
-    # if: github.event.release
+    # get the tag on release!
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'release' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
 
     steps:
+      - name: Set docker tag name based on triggered event
+        if: ${{ github.event_name == 'release' }}
+        run: echo "Hello $FIRST_NAME $middle_name $Last_Name, today is Monday!"
+        env:
+          IMAGE_TAG: ${{ github.event.release.tag_name }}
+
       - name: Checkout repository
         uses: actions/checkout@v2
 
@@ -231,5 +235,5 @@ jobs:
         with:
           context: .
           push: true
-          tags:  ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:rolling
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
           labels: ${{ steps.meta.outputs.labels }}
