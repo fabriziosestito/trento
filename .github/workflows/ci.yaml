@@ -8,7 +8,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  
+
 jobs:
   build:
     runs-on: ubuntu-20.04
@@ -231,5 +231,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: "rolling"
           labels: ${{ steps.meta.outputs.labels }}
