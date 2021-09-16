@@ -209,7 +209,7 @@ jobs:
 
     steps:
       - name: Set docker tag name based on triggered event
-        if: ${{ github.event_name == 'release' }}
+        if:  github.event_name == 'release'
         run: echo "Hello $FIRST_NAME $middle_name $Last_Name, today is Monday!"
         env:
           IMAGE_TAG: ${{ github.event.release.tag_name }}
