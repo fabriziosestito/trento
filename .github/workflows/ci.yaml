@@ -207,11 +207,13 @@ jobs:
       packages: write
 
     steps:
-      - name: Set docker tag name based on triggered event
-        if:  github.event_name == 'release'
-        run: echo "Hello $FIRST_NAME $middle_name $Last_Name, today is Monday!"
-        env:
-          IMAGE_TAG: ${{ github.event.release.tag_name }}
+      - name: Set environment variables
+        run: |
+          if [[ ${{ github.event_name }} == 'release' ]]; then
+            echo "IMAGE_TAG=rolling" >> $GITHUB_ENV
+          else
+            echo "IMAGE_TAG=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+          fi
 
       - name: Checkout repository
         uses: actions/checkout@v2
