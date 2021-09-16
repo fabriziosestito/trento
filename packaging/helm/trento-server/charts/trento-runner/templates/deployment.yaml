@@ -38,6 +38,8 @@ spec:
             - "{{ .Release.Name }}-consul-server:8500"
             - -i
             - "5"
+            - --log-level
+            - debug
           env:
             - name: CONSUL_HTTP_ADDR
               value:
