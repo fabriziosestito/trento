@@ -44,6 +44,7 @@ COPY --from=sles /lib64/libm.so.6 /lib64/libm.so.6
 COPY --from=sles /usr/lib64/libssl.so.1.1 /usr/lib64/libssl.so.1.1
 COPY --from=sles /lib64/libz.so.1 /lib64/libz.so.1
 COPY --from=sles /lib64/libgcc_s.so.1 /lib64/libgcc_s.so.1
+COPY --from=sles /usr/bin/true /usr/bin/true
 
 FROM sles-distroless-python3
 # COPY --from=sles-distroless-python3 /usr /usr
