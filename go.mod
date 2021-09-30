@@ -30,6 +30,7 @@ require (
 	golang.org/x/sys v0.0.0-20210809222454-d867a43fc93e // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.5 // indirect
+	gorm.io/driver/postgres v1.1.2 // indirect
 	gorm.io/gorm v1.21.15
 )
 
