@@ -9,6 +9,7 @@ import (
 	"github.com/trento-project/trento/internal/hosts"
 	"github.com/trento-project/trento/internal/sapsystem"
 	"github.com/trento-project/trento/internal/tags"
+	"github.com/trento-project/trento/web/repositories"
 )
 
 func ApiPingHandler(c *gin.Context) {
@@ -60,7 +61,7 @@ func ApiListTag(client consul.Client) gin.HandlerFunc {
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /api/hosts/{name}/tags [post]
-func ApiHostCreateTagHandler(client consul.Client) gin.HandlerFunc {
+func ApiHostCreateTagHandler(client consul.Client, tagsRepository repositories.TagsRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		name := c.Param("name")
 
@@ -89,6 +90,8 @@ func ApiHostCreateTagHandler(client consul.Client) gin.HandlerFunc {
 			_ = c.Error(err)
 			return
 		}
+
+		tagsRepository.Create(r.Tag, tags.HostResourceType, name)
 
 		c.JSON(http.StatusCreated, &r)
 	}

@@ -1,4 +1,10 @@
+global:
+  postgresql:
+    postgresqlUsername: "postgres"
+    postgresqlPassword: "postgres"
+    postgresqlDatabase: "trento"
+
 postgresql:
   service:
-      type: NodePort
-      nodePort: 32432
+    type: NodePort
+    nodePort: 32432

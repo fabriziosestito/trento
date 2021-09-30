@@ -9,8 +9,12 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 
 	"github.com/trento-project/trento/internal/consul"
+	"github.com/trento-project/trento/web/models"
+	"github.com/trento-project/trento/web/repositories"
 	"github.com/trento-project/trento/web/services"
 	"github.com/trento-project/trento/web/services/ara"
 
@@ -40,6 +44,7 @@ type Dependencies struct {
 	store                cookie.Store
 	checksService        services.ChecksService
 	subscriptionsService services.SubscriptionsService
+	tagsRepository       repositories.TagsRepository
 }
 
 func DefaultDependencies() Dependencies {
@@ -47,16 +52,37 @@ func DefaultDependencies() Dependencies {
 	engine := gin.Default()
 	store := cookie.NewStore([]byte("secret"))
 
+	db, err := initDB()
+	if err != nil {
+		panic("failed to connect database")
+	}
+
+	tagsRepository := repositories.NewTagsRepository(db)
 	araService := ara.NewAraService(araAddrDefault)
 	checksService := services.NewChecksService(araService)
 	subscriptionsService := services.NewSubscriptionsService(consulClient)
 
-	return Dependencies{consulClient, engine, store, checksService, subscriptionsService}
+	return Dependencies{consulClient, engine, store, checksService, subscriptionsService, tagsRepository}
 }
 
 func (d *Dependencies) SetAraAddr(araAddr string) {
 	araService := ara.NewAraService(araAddr)
 	d.checksService = services.NewChecksService(araService)
+}
+
+func initDB() (*gorm.DB, error) {
+	dsn := "host=localhost user=postgres password=postgres dbname=trento port=32432 sslmode=disable"
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.AutoMigrate(models.Tag{})
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }
 
 // shortcut to use default dependencies
@@ -107,7 +133,7 @@ func NewAppWithDeps(host string, port int, deps Dependencies) (*App, error) {
 		apiGroup.GET("/ping", ApiPingHandler)
 
 		apiGroup.GET("/tags", ApiListTag(deps.consul))
-		apiGroup.POST("/hosts/:name/tags", ApiHostCreateTagHandler(deps.consul))
+		apiGroup.POST("/hosts/:name/tags", ApiHostCreateTagHandler(deps.consul, deps.tagsRepository))
 		apiGroup.DELETE("/hosts/:name/tags/:tag", ApiHostDeleteTagHandler(deps.consul))
 		apiGroup.POST("/clusters/:id/tags", ApiClusterCreateTagHandler(deps.consul))
 		apiGroup.DELETE("/clusters/:id/tags/:tag", ApiClusterDeleteTagHandler(deps.consul))
