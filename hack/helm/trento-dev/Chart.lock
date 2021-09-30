@@ -1,0 +1,9 @@
+dependencies:
+- name: trento-server
+  repository: file://../../packaging/helm/trento-server
+  version: 0.1.0
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami/
+  version: 10.1.4
+digest: sha256:b9699523cf7c47a63883c97a79badea1b94f30062dc52e899505fba36fa39471
+generated: "2021-09-30T14:55:55.789690758+02:00"
