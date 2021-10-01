@@ -24,7 +24,7 @@ func NewTagsService(db *gorm.DB) *tagsService {
 func (r *tagsService) GetAll(resourceTypeFilter ...string) ([]string, error) {
 	db := r.db
 	for _, f := range resourceTypeFilter {
-		db = db.Where("resource_type", f)
+		db = db.Or("resource_type", f)
 	}
 
 	return getTags(db)
