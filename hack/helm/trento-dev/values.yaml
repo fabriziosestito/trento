@@ -8,3 +8,7 @@ postgresql:
   service:
     type: NodePort
     nodePort: 32432
+    
+trento-server:
+  consul:
+    enabled: false

@@ -14,7 +14,6 @@ import (
 
 	"github.com/trento-project/trento/internal/consul"
 	"github.com/trento-project/trento/web/models"
-	"github.com/trento-project/trento/web/repositories"
 	"github.com/trento-project/trento/web/services"
 	"github.com/trento-project/trento/web/services/ara"
 
@@ -44,7 +43,7 @@ type Dependencies struct {
 	store                cookie.Store
 	checksService        services.ChecksService
 	subscriptionsService services.SubscriptionsService
-	tagsRepository       repositories.TagsRepository
+	tagsService          services.TagsService
 }
 
 func DefaultDependencies() Dependencies {
@@ -57,12 +56,12 @@ func DefaultDependencies() Dependencies {
 		panic("failed to connect database")
 	}
 
-	tagsRepository := repositories.NewTagsRepository(db)
+	tagsService := services.NewTagsService(db)
 	araService := ara.NewAraService(araAddrDefault)
 	checksService := services.NewChecksService(araService)
 	subscriptionsService := services.NewSubscriptionsService(consulClient)
 
-	return Dependencies{consulClient, engine, store, checksService, subscriptionsService, tagsRepository}
+	return Dependencies{consulClient, engine, store, checksService, subscriptionsService, tagsService}
 }
 
 func (d *Dependencies) SetAraAddr(araAddr string) {
@@ -118,13 +117,13 @@ func NewAppWithDeps(host string, port int, deps Dependencies) (*App, error) {
 	engine.StaticFS("/static", http.FS(assetsFS))
 	engine.GET("/", HomeHandler)
 	engine.GET("/about", NewAboutHandler(deps.subscriptionsService))
-	engine.GET("/hosts", NewHostListHandler(deps.consul))
+	engine.GET("/hosts", NewHostListHandler(deps.consul, deps.tagsService))
 	engine.GET("/hosts/:name", NewHostHandler(deps.consul, deps.subscriptionsService))
 	engine.GET("/catalog", NewChecksCatalogHandler(deps.checksService))
-	engine.GET("/clusters", NewClusterListHandler(deps.consul, deps.checksService))
+	engine.GET("/clusters", NewClusterListHandler(deps.consul, deps.checksService, deps.tagsService))
 	engine.GET("/clusters/:id", NewClusterHandler(deps.consul, deps.checksService))
 	engine.POST("/clusters/:id/settings", NewSaveClusterSettingsHandler(deps.consul))
-	engine.GET("/sapsystems", NewSAPSystemListHandler(deps.consul))
+	engine.GET("/sapsystems", NewSAPSystemListHandler(deps.consul, deps.tagsService))
 	engine.GET("/sapsystems/:sid", NewSAPSystemHandler(deps.consul))
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
@@ -132,13 +131,13 @@ func NewAppWithDeps(host string, port int, deps Dependencies) (*App, error) {
 	{
 		apiGroup.GET("/ping", ApiPingHandler)
 
-		apiGroup.GET("/tags", ApiListTag(deps.consul))
-		apiGroup.POST("/hosts/:name/tags", ApiHostCreateTagHandler(deps.consul, deps.tagsRepository))
-		apiGroup.DELETE("/hosts/:name/tags/:tag", ApiHostDeleteTagHandler(deps.consul))
-		apiGroup.POST("/clusters/:id/tags", ApiClusterCreateTagHandler(deps.consul))
-		apiGroup.DELETE("/clusters/:id/tags/:tag", ApiClusterDeleteTagHandler(deps.consul))
-		apiGroup.POST("/sapsystems/:sid/tags", ApiSAPSystemCreateTagHandler(deps.consul))
-		apiGroup.DELETE("/sapsystems/:sid/tags/:tag", ApiSAPSystemDeleteTagHandler(deps.consul))
+		apiGroup.GET("/tags", ApiListTag(deps.consul, deps.tagsService))
+		apiGroup.POST("/hosts/:name/tags", ApiHostCreateTagHandler(deps.consul, deps.tagsService))
+		apiGroup.DELETE("/hosts/:name/tags/:tag", ApiHostDeleteTagHandler(deps.consul, deps.tagsService))
+		apiGroup.POST("/clusters/:id/tags", ApiClusterCreateTagHandler(deps.consul, deps.tagsService))
+		apiGroup.DELETE("/clusters/:id/tags/:tag", ApiClusterDeleteTagHandler(deps.consul, deps.tagsService))
+		apiGroup.POST("/sapsystems/:sid/tags", ApiSAPSystemCreateTagHandler(deps.consul, deps.tagsService))
+		apiGroup.DELETE("/sapsystems/:sid/tags/:tag", ApiSAPSystemDeleteTagHandler(deps.consul, deps.tagsService))
 	}
 
 	return app, nil
