@@ -26,15 +26,13 @@ jobs:
         image: postgres
         env:
           POSTGRES_PASSWORD: postgres 
+          POSTGRES_DB: trento_test
         # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    env:
-      DBPORT: 5432
-      DBHOST: postgres
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
@@ -62,6 +60,8 @@ jobs:
       - name: install-mockery
         run: go install github.com/vektra/mockery/v2
       - name: test
+        env:
+          DBPORT: 5432
         run: make test
       - name: static analysis
         run: make vet-check
