@@ -13,8 +13,10 @@ import (
 	"github.com/tdewolff/minify/v2"
 	"github.com/tdewolff/minify/v2/html"
 	"github.com/trento-project/trento/internal/consul"
-	"github.com/trento-project/trento/internal/consul/mocks"
+	consulMocks "github.com/trento-project/trento/internal/consul/mocks"
 	"github.com/trento-project/trento/internal/sapsystem"
+	"github.com/trento-project/trento/web/models"
+	servicesMocks "github.com/trento-project/trento/web/services/mocks"
 )
 
 func sapSystemsMap(instanceName string, host string, instanceNr int, features string) map[string]interface{} {
@@ -82,9 +84,9 @@ func TestSAPSystemsListHandler(t *testing.T) {
 		},
 	}
 
-	consulInst := new(mocks.Client)
-	catalog := new(mocks.Catalog)
-	kv := new(mocks.KV)
+	consulInst := new(consulMocks.Client)
+	catalog := new(consulMocks.Catalog)
+	kv := new(consulMocks.KV)
 
 	catalog.On("Nodes", mock.Anything).Return(nodes, nil, nil)
 	consulInst.On("Catalog").Return(catalog)
@@ -106,15 +108,14 @@ func TestSAPSystemsListHandler(t *testing.T) {
 	m = sapSystemsMap("D02", "netweaver04", 2, "ABAP|GATEWAY|ICMAN|IGS")
 	kv.On("ListMap", p, p).Return(m, nil)
 
-	tags := map[string]interface{}{
-		"tag1": struct{}{},
-	}
-	kv.On("ListMap", "trento/v0/tags/sapsystems/HA1/", "trento/v0/tags/sapsystems/HA1/").Return(tags, nil)
-
 	consulInst.On("KV").Return(kv)
 
-	deps := DefaultDependencies()
+	mockTagsService := new(servicesMocks.TagsService)
+	mockTagsService.On("GetAllByResource", models.TagSAPSystemResourceType, "HA1").Return([]string{"tag1"}, nil)
+
+	deps := testDependencies()
 	deps.consul = consulInst
+	deps.tagsService = mockTagsService
 
 	var err error
 	app, err := NewAppWithDeps("", 80, deps)
@@ -164,10 +165,10 @@ func TestSAPSystemHandler(t *testing.T) {
 		},
 	}
 
-	consulInst := new(mocks.Client)
-	catalog := new(mocks.Catalog)
-	kv := new(mocks.KV)
-	health := new(mocks.Health)
+	consulInst := new(consulMocks.Client)
+	catalog := new(consulMocks.Catalog)
+	kv := new(consulMocks.KV)
+	health := new(consulMocks.Health)
 
 	catalog.On("Nodes", mock.Anything).Return(nodes, nil, nil)
 	consulInst.On("Catalog").Return(catalog)
@@ -181,7 +182,7 @@ func TestSAPSystemHandler(t *testing.T) {
 	health.On("Node", "test_host", mock.Anything).Return(passHealthChecks, nil, nil)
 	consulInst.On("Health").Return(health)
 
-	deps := DefaultDependencies()
+	deps := testDependencies()
 	deps.consul = consulInst
 
 	var err error
@@ -218,9 +219,9 @@ func TestSAPSystemHandler404Error(t *testing.T) {
 		},
 	}
 
-	consulInst := new(mocks.Client)
-	kv := new(mocks.KV)
-	catalog := new(mocks.Catalog)
+	consulInst := new(consulMocks.Client)
+	kv := new(consulMocks.KV)
+	catalog := new(consulMocks.Catalog)
 
 	catalog.On("Nodes", mock.Anything).Return(nodes, nil, nil)
 	consulInst.On("Catalog").Return(catalog)
@@ -231,7 +232,7 @@ func TestSAPSystemHandler404Error(t *testing.T) {
 	kv.On("ListMap", p, p).Return(m, nil)
 	consulInst.On("KV").Return(kv)
 
-	deps := DefaultDependencies()
+	deps := testDependencies()
 	deps.consul = consulInst
 
 	var err error

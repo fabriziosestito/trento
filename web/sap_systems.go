@@ -10,7 +10,8 @@ import (
 	"github.com/trento-project/trento/internal/consul"
 	"github.com/trento-project/trento/internal/hosts"
 	"github.com/trento-project/trento/internal/sapsystem"
-	"github.com/trento-project/trento/internal/tags"
+	"github.com/trento-project/trento/web/models"
+	"github.com/trento-project/trento/web/services"
 )
 
 type SAPSystemRow struct {
@@ -30,7 +31,7 @@ type InstanceRow struct {
 
 type SAPSystemsTable []*SAPSystemRow
 
-func NewSAPSystemsTable(sapSystemsList sapsystem.SAPSystemsList, hostList hosts.HostList, client consul.Client) (SAPSystemsTable, error) {
+func NewSAPSystemsTable(sapSystemsList sapsystem.SAPSystemsList, hostList hosts.HostList, tagsService services.TagsService) (SAPSystemsTable, error) {
 	var sapSystemsTable SAPSystemsTable
 	rowsBySID := make(map[string]*SAPSystemRow)
 
@@ -41,8 +42,7 @@ func NewSAPSystemsTable(sapSystemsList sapsystem.SAPSystemsList, hostList hosts.
 
 		sapSystem, ok := rowsBySID[s.SID]
 		if !ok {
-			t := tags.NewTags(client)
-			sapsystemTags, err := t.GetAllByResource(tags.SAPSystemResourceType, s.SID)
+			sapsystemTags, err := tagsService.GetAllByResource(models.TagSAPSystemResourceType, s.SID)
 			if err != nil {
 				return nil, err
 			}
@@ -160,14 +160,14 @@ func (t SAPSystemsTable) GetAllTags() []string {
 	return tags
 }
 
-func NewSAPSystemListHandler(client consul.Client) gin.HandlerFunc {
+func NewSAPSystemListHandler(client consul.Client, tagsService services.TagsService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var sapSystemsList sapsystem.SAPSystemsList
 		query := c.Request.URL.Query()
 		sidFilter := query["sid"]
 		tagsFilter := query["tags"]
 
-		hostList, err := hosts.Load(client, "", nil, nil)
+		hostList, err := hosts.Load(client, "", nil)
 		if err != nil {
 			_ = c.Error(err)
 			return
@@ -185,7 +185,7 @@ func NewSAPSystemListHandler(client consul.Client) gin.HandlerFunc {
 			}
 		}
 
-		sapSystemsTable, err := NewSAPSystemsTable(sapSystemsList, hostList, client)
+		sapSystemsTable, err := NewSAPSystemsTable(sapSystemsList, hostList, tagsService)
 		if err != nil {
 			_ = c.Error(err)
 			return
@@ -206,7 +206,7 @@ func NewSAPSystemHandler(client consul.Client) gin.HandlerFunc {
 
 		sid := c.Param("sid")
 
-		hostList, err := hosts.Load(client, "", nil, nil)
+		hostList, err := hosts.Load(client, "", nil)
 		if err != nil {
 			_ = c.Error(err)
 			return
