@@ -6,7 +6,7 @@ import (
 )
 
 func setupTestDatabase() *gorm.DB {
-	dsn := "host=localhost user=postgres password=postgres dbname=trento port=32432 sslmode=disable"
+	dsn := "host=localhost user=postgres password=postgres port=32432 dbname=trento_test sslmode=disable"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(err)

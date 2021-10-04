@@ -2,8 +2,11 @@ dependencies:
 - name: trento-server
   repository: file://../../../packaging/helm/trento-server
   version: 0.1.0
+- name: trento-test
+  repository: ""
+  version: '>0.0.0'
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami/
   version: 10.1.4
-digest: sha256:c2be5b9628661d20ab55992d558c83776f18941a1754cf56120f420e37911f93
-generated: "2021-10-01T11:01:08.127284291+02:00"
+digest: sha256:db85e497a4124df4e282cfe27c81f41470d5432a325f69df7fe7c1adbfd7317f
+generated: "2021-10-04T11:27:15.518051243+02:00"

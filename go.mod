@@ -20,6 +20,7 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/afero v1.1.2
 	github.com/spf13/cobra v1.1.3
+	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2

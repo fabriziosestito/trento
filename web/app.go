@@ -9,6 +9,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
@@ -28,8 +29,6 @@ var assetsFS embed.FS
 
 //go:embed templates
 var templatesFS embed.FS
-
-const araAddrDefault = "127.0.0.1:8000"
 
 type App struct {
 	host string
@@ -51,37 +50,47 @@ func DefaultDependencies() Dependencies {
 	engine := gin.Default()
 	store := cookie.NewStore([]byte("secret"))
 
-	db, err := initDB()
+	db, err := InitDB()
 	if err != nil {
 		panic("failed to connect database")
 	}
 
+	if err := MigrateDB(db); err != nil {
+		panic("failed to migrate database")
+	}
+
 	tagsService := services.NewTagsService(db)
-	araService := ara.NewAraService(araAddrDefault)
+	araService := ara.NewAraService(viper.GetString("ara-addr"))
 	checksService := services.NewChecksService(araService)
 	subscriptionsService := services.NewSubscriptionsService(consulClient)
 
 	return Dependencies{consulClient, engine, store, checksService, subscriptionsService, tagsService}
 }
 
-func (d *Dependencies) SetAraAddr(araAddr string) {
-	araService := ara.NewAraService(araAddr)
-	d.checksService = services.NewChecksService(araService)
-}
+func InitDB() (*gorm.DB, error) {
+	host := viper.GetString("dbhost")
+	port := viper.GetString("dbport")
+	user := viper.GetString("dbuser")
+	password := viper.GetString("dbpassword")
+	dbname := viper.GetString("dbname")
 
-func initDB() (*gorm.DB, error) {
-	dsn := "host=localhost user=postgres password=postgres dbname=trento port=32432 sslmode=disable"
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
 
-	err = db.AutoMigrate(models.Tag{})
+	return db, nil
+}
+
+func MigrateDB(db *gorm.DB) error {
+	err := db.AutoMigrate(models.Tag{})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return db, nil
+	return nil
 }
 
 // shortcut to use default dependencies

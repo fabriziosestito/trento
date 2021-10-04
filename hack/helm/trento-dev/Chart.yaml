@@ -10,7 +10,6 @@ dependencies:
   - name: trento-server
     version: ">0.0.0"
     repository: file://../../../packaging/helm/trento-server
-    
   - name: postgresql
     version: ~10.1.4
     repository: https://charts.bitnami.com/bitnami/
