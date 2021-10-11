@@ -14,6 +14,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
@@ -198,23 +199,10 @@ func (a *App) Start() error {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	var tlsConfig *tls.Config
-	if !viper.GetBool("disable-mtls") {
-		// Create a CA certificate pool and add cert.pem to it
-		caCert, err := ioutil.ReadFile("ca-cert.pem")
-		if err != nil {
-			log.Fatal(err)
-		}
-		caCertPool := x509.NewCertPool()
-		caCertPool.AppendCertsFromPEM(caCert)
-
-		// Create the TLS Config with the CA pool and enable Client certificate validation
-		tlsConfig = &tls.Config{
-			ClientCAs:  caCertPool,
-			ClientAuth: tls.RequireAndVerifyClientCert,
-		}
+	tlsConfig, err := getTLSConfig()
+	if err != nil {
+		return err
 	}
-
 	s2 := &http.Server{
 		Addr:           fmt.Sprintf("%s:%d", a.host, 8443),
 		Handler:        a.collectorEngine,
@@ -226,7 +214,7 @@ func (a *App) Start() error {
 
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
-	var err error
+
 	go func() {
 		err = s.ListenAndServe()
 		log.Error(err)
@@ -234,10 +222,10 @@ func (a *App) Start() error {
 	}()
 
 	go func() {
-		if viper.GetBool("disable-mtls") {
+		if tlsConfig == nil {
 			err = s2.ListenAndServe()
 		} else {
-			err = s2.ListenAndServeTLS("server-cert.pem", "server-key.pem")
+			err = s2.ListenAndServeTLS("", "")
 		}
 
 		log.Error(err)
@@ -249,6 +237,45 @@ func (a *App) Start() error {
 	return err
 }
 
-func (a *App) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	a.webEngine.ServeHTTP(w, req)
+func getTLSConfig() (*tls.Config, error) {
+	if !viper.GetBool("enable-mtls") {
+		return nil, nil
+	}
+
+	cert := viper.GetString("cert")
+	key := viper.GetString("key")
+	ca := viper.GetString("ca")
+
+	var err error
+
+	if cert == "" {
+		err = fmt.Errorf("you must provide a server ssl certificate")
+	}
+	if key == "" {
+		err = errors.Wrap(err, "you must provide a key to enable mTLS")
+	}
+	if ca == "" {
+		err = errors.Wrap(err, "you must provide a CA ssl certificate")
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	caCert, err := ioutil.ReadFile(ca)
+	if err != nil {
+		return nil, err
+	}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+
+	certificate, err := tls.LoadX509KeyPair(cert, key)
+	if err != nil {
+		return nil, err
+	}
+
+	return &tls.Config{
+		ClientCAs:    caCertPool,
+		ClientAuth:   tls.RequireAndVerifyClientCert,
+		Certificates: []tls.Certificate{certificate},
+	}, nil
 }
