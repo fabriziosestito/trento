@@ -4,12 +4,11 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/trento-project/trento/web/datapipeline/readmodels"
 	"github.com/trento-project/trento/web/models"
 	"github.com/trento-project/trento/web/services"
 )
 
-func NewClusterListHealthContainer(clusterList readmodels.ClusterList) *HealthContainer {
+func NewClusterListHealthContainer(clusterList models.ClusterList) *HealthContainer {
 	h := &HealthContainer{}
 	for _, c := range clusterList {
 		switch c.Health {

@@ -1,4 +1,4 @@
-package readmodels
+package models
 
 import "github.com/lib/pq"
 

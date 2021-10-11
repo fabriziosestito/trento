@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/trento-project/trento/web/datapipeline"
-	"github.com/trento-project/trento/web/datapipeline/services"
+	"github.com/trento-project/trento/web/services"
 )
 
 func ApiCollectDataHandler(collectorService services.CollectorService) gin.HandlerFunc {

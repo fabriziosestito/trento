@@ -5,13 +5,12 @@ import (
 
 	"github.com/lib/pq"
 	"github.com/trento-project/trento/internal"
-	"github.com/trento-project/trento/web/datapipeline/readmodels"
 	"github.com/trento-project/trento/web/models"
 	"gorm.io/gorm"
 )
 
 type ClusterListService interface {
-	GetAll(filters map[string][]string) (readmodels.ClusterList, error)
+	GetAll(filters map[string][]string) (models.ClusterList, error)
 }
 
 type clusterListService struct {
@@ -28,8 +27,8 @@ func NewClusterList(db *gorm.DB, checksService ChecksService, tagsService TagsSe
 	}
 }
 
-func (s *clusterListService) GetAll(filters map[string][]string) (readmodels.ClusterList, error) {
-	var clusterList readmodels.ClusterList
+func (s *clusterListService) GetAll(filters map[string][]string) (models.ClusterList, error) {
+	var clusterList models.ClusterList
 	db := s.db
 
 	if sids, ok := filters["sid"]; ok {
@@ -69,7 +68,7 @@ func (s *clusterListService) GetAll(filters map[string][]string) (readmodels.Clu
 	return clusterList, nil
 }
 
-func (s *clusterListService) enrichClusterData(clusterList readmodels.ClusterList) error {
+func (s *clusterListService) enrichClusterData(clusterList models.ClusterList) error {
 	names := make(map[string]int)
 	for _, c := range clusterList {
 		names[c.Name] += 1
@@ -92,8 +91,8 @@ func (s *clusterListService) enrichClusterData(clusterList readmodels.ClusterLis
 	return nil
 }
 
-func filterByTags(clusterList readmodels.ClusterList, tags []string) readmodels.ClusterList {
-	var filteredClusterList readmodels.ClusterList
+func filterByTags(clusterList models.ClusterList, tags []string) models.ClusterList {
+	var filteredClusterList models.ClusterList
 
 	for _, c := range clusterList {
 		for _, t := range tags {
@@ -107,8 +106,8 @@ func filterByTags(clusterList readmodels.ClusterList, tags []string) readmodels.
 	return filteredClusterList
 }
 
-func filterByHealth(clusterList readmodels.ClusterList, health []string) readmodels.ClusterList {
-	var filteredClusterList readmodels.ClusterList
+func filterByHealth(clusterList models.ClusterList, health []string) models.ClusterList {
+	var filteredClusterList models.ClusterList
 
 	for _, c := range clusterList {
 		if internal.Contains(health, c.Health) {

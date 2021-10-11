@@ -1,17 +1,16 @@
-package projectors
+package datapipeline
 
 import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/trento-project/trento/web/datapipeline"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
-func StartProjectorsWorkerPool(workersNumber int, db *gorm.DB) chan *datapipeline.DataCollectedEvent {
+func StartProjectorsWorkerPool(workersNumber int, db *gorm.DB) chan *DataCollectedEvent {
 	// find a way to make the projectons non blocking
-	ch := make(chan *datapipeline.DataCollectedEvent, workersNumber*1000)
+	ch := make(chan *DataCollectedEvent, workersNumber*1000)
 
 	for i := 0; i < workersNumber; i++ {
 		go Worker(ch, db)
@@ -20,10 +19,10 @@ func StartProjectorsWorkerPool(workersNumber int, db *gorm.DB) chan *datapipelin
 	return ch
 }
 
-func Worker(ch chan *datapipeline.DataCollectedEvent, db *gorm.DB) {
+func Worker(ch chan *DataCollectedEvent, db *gorm.DB) {
 	for event := range ch {
 		switch event.DiscoveryType {
-		case datapipeline.ClusterDiscovery:
+		case ClusterDiscovery:
 			Project(event, db, ClusterListHandler)
 		default:
 			log.Errorf("unknown discovery type: %s", event.DiscoveryType)
@@ -32,14 +31,14 @@ func Worker(ch chan *datapipeline.DataCollectedEvent, db *gorm.DB) {
 	}
 }
 
-func Project(event *datapipeline.DataCollectedEvent, db *gorm.DB, handler func(*datapipeline.DataCollectedEvent, *gorm.DB) error) error {
+func Project(event *DataCollectedEvent, db *gorm.DB, handler func(*DataCollectedEvent, *gorm.DB) error) error {
 	return db.Transaction(func(tx *gorm.DB) error {
 		tx.Clauses(clause.OnConflict{
 			UpdateAll: true,
 		}).Create(&Subscription{
-			DiscoveryType:   event.DiscoveryType,
-			AgentID:         event.AgentID,
-			LastSeenEventID: event.ID,
+			DiscoveryType:  event.DiscoveryType,
+			AgentID:        event.AgentID,
+			LastSeenDataID: event.ID,
 		})
 
 		err := handler(event, tx)

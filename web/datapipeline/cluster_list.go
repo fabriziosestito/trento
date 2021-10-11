@@ -1,4 +1,4 @@
-package projectors
+package datapipeline
 
 import (
 	"bytes"
@@ -6,13 +6,12 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/trento-project/trento/internal/cluster"
-	"github.com/trento-project/trento/web/datapipeline"
-	"github.com/trento-project/trento/web/datapipeline/readmodels"
+	"github.com/trento-project/trento/web/models"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
-func ClusterListHandler(event *datapipeline.DataCollectedEvent, db *gorm.DB) error {
+func ClusterListHandler(event *DataCollectedEvent, db *gorm.DB) error {
 	data, _ := event.Payload.MarshalJSON()
 	dec := json.NewDecoder(bytes.NewReader(data))
 	dec.DisallowUnknownFields()
@@ -34,8 +33,8 @@ func ClusterListHandler(event *datapipeline.DataCollectedEvent, db *gorm.DB) err
 	}).Create(clusterListReadModel).Error
 }
 
-func transformClusterListData(cluster *cluster.Cluster) (*readmodels.Cluster, error) {
-	return &readmodels.Cluster{
+func transformClusterListData(cluster *cluster.Cluster) (*models.Cluster, error) {
+	return &models.Cluster{
 		ID:          cluster.Id,
 		Name:        cluster.Name,
 		ClusterType: detectClusterType(cluster),
@@ -64,11 +63,11 @@ func detectClusterType(cluster *cluster.Cluster) string {
 
 	switch {
 	case hasSapHanaTopology && hasSAPHana:
-		return readmodels.ClusterTypeScaleUp
+		return models.ClusterTypeScaleUp
 	case hasSapHanaTopology && hasSAPHanaController:
-		return readmodels.ClusterTypeScaleOut
+		return models.ClusterTypeScaleOut
 	default:
-		return readmodels.ClusterTypeUnknown
+		return models.ClusterTypeUnknown
 	}
 }
 

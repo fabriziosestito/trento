@@ -22,9 +22,6 @@ import (
 
 	"github.com/trento-project/trento/internal/consul"
 	"github.com/trento-project/trento/web/datapipeline"
-	"github.com/trento-project/trento/web/datapipeline/projectors"
-	"github.com/trento-project/trento/web/datapipeline/readmodels"
-	dataPipelineServices "github.com/trento-project/trento/web/datapipeline/services"
 	"github.com/trento-project/trento/web/models"
 	"github.com/trento-project/trento/web/services"
 	"github.com/trento-project/trento/web/services/ara"
@@ -57,7 +54,7 @@ type Dependencies struct {
 	hostsService         services.HostsService
 	sapSystemsService    services.SAPSystemsService
 	tagsService          services.TagsService
-	collectorService     dataPipelineServices.CollectorService
+	collectorService     services.CollectorService
 	clusterListService   services.ClusterListService
 }
 
@@ -86,8 +83,8 @@ func DefaultDependencies() Dependencies {
 	hostsService := services.NewHostsService(consulClient)
 	sapSystemsService := services.NewSAPSystemsService(consulClient)
 
-	ch := projectors.StartProjectorsWorkerPool(10, db)
-	collectorService := dataPipelineServices.NewCollectorService(db, ch)
+	ch := datapipeline.StartProjectorsWorkerPool(10, db)
+	collectorService := services.NewCollectorService(db, ch)
 
 	clusterListService := services.NewClusterList(db, checksService, tagsService)
 	return Dependencies{
@@ -116,7 +113,7 @@ func InitDB() (*gorm.DB, error) {
 }
 
 func MigrateDB(db *gorm.DB) error {
-	err := db.AutoMigrate(models.Tag{}, datapipeline.DataCollectedEvent{}, projectors.Subscription{}, readmodels.Cluster{})
+	err := db.AutoMigrate(models.Tag{}, models.Cluster{}, datapipeline.DataCollectedEvent{}, datapipeline.Subscription{})
 	if err != nil {
 		return err
 	}
