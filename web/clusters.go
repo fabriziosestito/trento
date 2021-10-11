@@ -301,7 +301,7 @@ func NewClustersTable(s services.ChecksService, t services.TagsService, clusters
 
 	for id, c := range clusters {
 		var health string
-		// TODO: Cost-optimized has multiple SIDs
+		// TODO: Cost-optimized has multiple SIDs, we will need to implement this in the future
 		var sids []string
 		sids = append(sids, getHanaSID(c))
 

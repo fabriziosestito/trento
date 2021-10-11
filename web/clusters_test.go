@@ -1,10 +1,12 @@
 package web
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"path"
 	"regexp"
 	"strconv"
@@ -533,7 +535,7 @@ func TestClustersListHandler(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	app.ServeHTTP(resp, req)
+	app.webEngine.ServeHTTP(resp, req)
 
 	consulInst.AssertExpectations(t)
 	checksMocks.AssertExpectations(t)
@@ -559,6 +561,13 @@ func TestClustersListHandler(t *testing.T) {
 }
 
 func TestClusterHandlerHANA(t *testing.T) {
+
+	a := clustersListMap()["47d1190ffb4f781974c8356d7f863b03"]
+
+	b, _ := json.Marshal(a)
+
+	err := os.WriteFile("/tmp/dat1", b, 0644)
+
 	clusterId := "47d1190ffb4f781974c8356d7f863b03"
 
 	nodes := []*consulApi.Node{
@@ -628,7 +637,7 @@ func TestClusterHandlerHANA(t *testing.T) {
 	}
 	req.Header.Set("Accept", "text/html")
 
-	app.ServeHTTP(resp, req)
+	app.webEngine.ServeHTTP(resp, req)
 
 	consulInst.AssertExpectations(t)
 	kv.AssertExpectations(t)
@@ -750,7 +759,7 @@ func TestClusterHandlerUnreachableNodes(t *testing.T) {
 	}
 	req.Header.Set("Accept", "text/html")
 
-	app.ServeHTTP(resp, req)
+	app.webEngine.ServeHTTP(resp, req)
 
 	consulInst.AssertExpectations(t)
 	kv.AssertExpectations(t)
@@ -836,7 +845,7 @@ func TestClusterHandlerAlert(t *testing.T) {
 	}
 	req.Header.Set("Accept", "text/html")
 
-	app.ServeHTTP(resp, req)
+	app.webEngine.ServeHTTP(resp, req)
 
 	consulInst.AssertExpectations(t)
 	kv.AssertExpectations(t)
@@ -890,7 +899,7 @@ func TestClusterHandlerGeneric(t *testing.T) {
 	}
 	req.Header.Set("Accept", "text/html")
 
-	app.ServeHTTP(resp, req)
+	app.webEngine.ServeHTTP(resp, req)
 
 	assert.NoError(t, err)
 	assert.Equal(t, 200, resp.Code)
@@ -925,7 +934,7 @@ func TestClusterHandler404Error(t *testing.T) {
 	}
 	req.Header.Set("Accept", "text/html")
 
-	app.ServeHTTP(resp, req)
+	app.webEngine.ServeHTTP(resp, req)
 
 	assert.NoError(t, err)
 	assert.Equal(t, 404, resp.Code)
@@ -971,7 +980,7 @@ func TestSaveChecksHandler(t *testing.T) {
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 
-	app.ServeHTTP(resp, req)
+	app.webEngine.ServeHTTP(resp, req)
 
 	assert.NoError(t, err)
 	assert.Equal(t, 302, resp.Code)
