@@ -1,51 +1,37 @@
 package datapipeline
 
 import (
-	"fmt"
-
-	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
-func StartProjectorsWorkerPool(workersNumber int, db *gorm.DB) chan *DataCollectedEvent {
-	// find a way to make the projectons non blocking
-	ch := make(chan *DataCollectedEvent, workersNumber*1000)
+// TODO: tune bufferSize and workersNumber
+var workersNumber int = 10
+var bufferSize int = workersNumber * 1000
+
+func initProjectorRegistry(db *gorm.DB) []*Projector {
+	clusterListProjector := NewProjector("cluster_list", db)
+	clusterListProjector.AddHandler(ClusterDiscovery, ClusterListHandler)
+
+	return []*Projector{
+		clusterListProjector,
+	}
+}
+
+func StartProjectorsWorkerPool(db *gorm.DB) chan *DataCollectedEvent {
+	ch := make(chan *DataCollectedEvent, bufferSize)
+	projectorRegistry := initProjectorRegistry(db)
 
 	for i := 0; i < workersNumber; i++ {
-		go Worker(ch, db)
+		go Worker(ch, projectorRegistry)
 	}
 
 	return ch
 }
 
-func Worker(ch chan *DataCollectedEvent, db *gorm.DB) {
+func Worker(ch chan *DataCollectedEvent, projectors []*Projector) {
 	for event := range ch {
-		switch event.DiscoveryType {
-		case ClusterDiscovery:
-			Project(event, db, ClusterListHandler)
-		default:
-			log.Errorf("unknown discovery type: %s", event.DiscoveryType)
+		for _, projector := range projectors {
+			projector.Project(event)
 		}
-		fmt.Println("Received event:", event.DiscoveryType)
 	}
-}
-
-func Project(event *DataCollectedEvent, db *gorm.DB, handler func(*DataCollectedEvent, *gorm.DB) error) error {
-	return db.Transaction(func(tx *gorm.DB) error {
-		tx.Clauses(clause.OnConflict{
-			UpdateAll: true,
-		}).Create(&Subscription{
-			DiscoveryType:  event.DiscoveryType,
-			AgentID:        event.AgentID,
-			LastSeenDataID: event.ID,
-		})
-
-		err := handler(event, tx)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
 }

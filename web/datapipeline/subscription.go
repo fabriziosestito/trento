@@ -3,8 +3,8 @@ package datapipeline
 import "time"
 
 type Subscription struct {
-	LastSeenDataID int64
-	AgentID        string `gorm:"primaryKey"`
-	DiscoveryType  string `gorm:"primaryKey"`
-	SeenAt         time.Time
+	LastSeenDataCollectedEventID int64
+	AgentID                      string `gorm:"primaryKey"`
+	ProjectorID                  string `gorm:"primaryKey"`
+	UpdatedAt                    time.Time
 }

@@ -1,6 +1,7 @@
 package web
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"embed"
@@ -8,7 +9,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/gin-contrib/sessions"
@@ -17,6 +17,7 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"golang.org/x/sync/errgroup"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
@@ -83,7 +84,8 @@ func DefaultDependencies() Dependencies {
 	hostsService := services.NewHostsService(consulClient)
 	sapSystemsService := services.NewSAPSystemsService(consulClient)
 
-	ch := datapipeline.StartProjectorsWorkerPool(10, db)
+	// TODO: this layer of data pipeline initialization will go in its own datapipeline application
+	ch := datapipeline.StartProjectorsWorkerPool(db)
 	collectorService := services.NewCollectorService(db, ch)
 
 	clusterListService := services.NewClusterList(db, checksService, tagsService)
@@ -188,7 +190,7 @@ func NewAppWithDeps(host string, port int, deps Dependencies) (*App, error) {
 }
 
 func (a *App) Start() error {
-	s := &http.Server{
+	webServer := &http.Server{
 		Addr:           fmt.Sprintf("%s:%d", a.host, a.port),
 		Handler:        a.webEngine,
 		ReadTimeout:    10 * time.Second,
@@ -200,7 +202,7 @@ func (a *App) Start() error {
 	if err != nil {
 		return err
 	}
-	s2 := &http.Server{
+	collectorServer := &http.Server{
 		Addr:           fmt.Sprintf("%s:%d", a.host, 8443),
 		Handler:        a.collectorEngine,
 		ReadTimeout:    10 * time.Second,
@@ -209,29 +211,35 @@ func (a *App) Start() error {
 		TLSConfig:      tlsConfig,
 	}
 
-	wg := new(sync.WaitGroup)
-	wg.Add(1)
-
-	go func() {
-		err = s.ListenAndServe()
-		log.Error(err)
-		wg.Done()
-	}()
-
-	go func() {
-		if tlsConfig == nil {
-			err = s2.ListenAndServe()
-		} else {
-			err = s2.ListenAndServeTLS("", "")
+	g, ctx := errgroup.WithContext(context.Background())
+	g.Go(func() error {
+		err := webServer.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			return err
 		}
+		return err
+	})
 
-		log.Error(err)
-		wg.Done()
+	g.Go(func() error {
+		var err error
+		if tlsConfig == nil {
+			err = collectorServer.ListenAndServe()
+		} else {
+			err = collectorServer.ListenAndServeTLS("", "")
+		}
+		if err != nil && err != http.ErrServerClosed {
+			return err
+		}
+		return nil
+	})
+
+	go func() {
+		<-ctx.Done()
+		webServer.Close()
+		collectorServer.Close()
 	}()
 
-	wg.Wait()
-
-	return err
+	return g.Wait()
 }
 
 func getTLSConfig() (*tls.Config, error) {
