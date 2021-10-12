@@ -9,25 +9,27 @@ import (
 	"gorm.io/gorm"
 )
 
-type ClusterListService interface {
+//go:generate mockery --name=ClustersService
+
+type ClustersService interface {
 	GetAll(filters map[string][]string) (models.ClusterList, error)
 }
 
-type clusterListService struct {
+type clustersService struct {
 	db            *gorm.DB
 	checksService ChecksService
 	tagsService   TagsService
 }
 
-func NewClusterList(db *gorm.DB, checksService ChecksService, tagsService TagsService) *clusterListService {
-	return &clusterListService{
+func NewClusterList(db *gorm.DB, checksService ChecksService, tagsService TagsService) *clustersService {
+	return &clustersService{
 		db:            db,
 		checksService: checksService,
 		tagsService:   tagsService,
 	}
 }
 
-func (s *clusterListService) GetAll(filters map[string][]string) (models.ClusterList, error) {
+func (s *clustersService) GetAll(filters map[string][]string) (models.ClusterList, error) {
 	var clusterList models.ClusterList
 	db := s.db
 
@@ -68,7 +70,7 @@ func (s *clusterListService) GetAll(filters map[string][]string) (models.Cluster
 	return clusterList, nil
 }
 
-func (s *clusterListService) enrichClusterData(clusterList models.ClusterList) error {
+func (s *clustersService) enrichClusterData(clusterList models.ClusterList) error {
 	names := make(map[string]int)
 	for _, c := range clusterList {
 		names[c.Name] += 1

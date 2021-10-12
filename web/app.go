@@ -56,7 +56,7 @@ type Dependencies struct {
 	sapSystemsService    services.SAPSystemsService
 	tagsService          services.TagsService
 	collectorService     services.CollectorService
-	clusterListService   services.ClusterListService
+	clustersService      services.ClustersService
 }
 
 func DefaultDependencies() Dependencies {
@@ -88,11 +88,11 @@ func DefaultDependencies() Dependencies {
 	ch := datapipeline.StartProjectorsWorkerPool(db)
 	collectorService := services.NewCollectorService(db, ch)
 
-	clusterListService := services.NewClusterList(db, checksService, tagsService)
+	clustersService := services.NewClusterList(db, checksService, tagsService)
 	return Dependencies{
 		consulClient, webEngine, collectorEngine, store,
 		checksService, subscriptionsService, hostsService, sapSystemsService, tagsService,
-		collectorService, clusterListService,
+		collectorService, clustersService,
 	}
 }
 
@@ -160,7 +160,7 @@ func NewAppWithDeps(host string, port int, deps Dependencies) (*App, error) {
 	webEngine.GET("/hosts/:name", NewHostHandler(deps.consul, deps.subscriptionsService))
 	webEngine.GET("/catalog", NewChecksCatalogHandler(deps.checksService))
 	webEngine.GET("/clusters", NewClusterListHandler(deps.consul, deps.checksService, deps.tagsService))
-	webEngine.GET("/clusters-next", NewClusterListNextHandler(deps.clusterListService))
+	webEngine.GET("/clusters-next", NewClusterListNextHandler(deps.clustersService))
 	webEngine.GET("/clusters/:id", NewClusterHandler(deps.consul, deps.checksService))
 	webEngine.POST("/clusters/:id/settings", NewSaveClusterSettingsHandler(deps.consul))
 	webEngine.GET("/sapsystems", NewSAPSystemListHandler(deps.consul, deps.hostsService, deps.sapSystemsService, deps.tagsService))

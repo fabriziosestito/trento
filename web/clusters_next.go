@@ -23,11 +23,11 @@ func NewClusterListHealthContainer(clusterList models.ClusterList) *HealthContai
 	return h
 }
 
-func NewClusterListNextHandler(clusterListService services.ClusterListService) gin.HandlerFunc {
+func NewClusterListNextHandler(clustersService services.ClustersService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		query := c.Request.URL.Query()
 
-		clusterList, err := clusterListService.GetAll(query)
+		clusterList, err := clustersService.GetAll(query)
 
 		if err != nil {
 			_ = c.Error(err)
