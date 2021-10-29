@@ -6,6 +6,11 @@ type: application
 # to the chart and its templates
 version: 0.1.0
 
+maintainers:
+  - name: trento-project
+    email: trento-project@suse.com
+    url: https://trento-project.io
+
 dependencies:
   - name: trento-web
     version: ">0.0.0"
