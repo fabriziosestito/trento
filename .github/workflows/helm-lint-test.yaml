@@ -31,8 +31,13 @@ jobs:
       #       echo "::set-output name=changed::true"
       #     fi
 
+      - name: Add repositories
+        run: | 
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add hashicorp https://helm.releases.hashicorp.com
+          
       - name: Run chart-testing (lint)
-        run: ct lint --charts packaging/helm/trento-server 
+        run: ct lint --charts packaging/helm/trento-server
 
       # - name: Create kind cluster
       #   uses: helm/kind-action@v1.2.0
