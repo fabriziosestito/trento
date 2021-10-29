@@ -44,5 +44,5 @@ jobs:
         #if: steps.list-changed.outputs.changed == 'true'
 
       - name: Run chart-testing (install)
-        run: ct install --target-branch main --charts packaging/helm/trento-server
+        run: ct install --target-branch main --charts packaging/helm/trento-server --helm-extra-args "--timeout 1000"
  
