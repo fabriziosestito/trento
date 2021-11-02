@@ -35,9 +35,9 @@ func (suite *CollectorClientTestSuite) TestCollectorClient_NewClientWithTLS() {
 		EnablemTLS:    true,
 		CollectorHost: "localhost",
 		CollectorPort: 8081,
-		Cert:          "../../../test/certs/client-cert.pem",
-		Key:           "../../../test/certs/client-key.pem",
-		CA:            "../../../test/certs/ca-cert.pem",
+		Cert:          "./test/certs/client-cert.pem",
+		Key:           "./test/certs/client-key.pem",
+		CA:            "./test/certs/ca-cert.pem",
 	})
 
 	suite.NoError(err)
@@ -69,9 +69,9 @@ func (suite *CollectorClientTestSuite) TestCollectorClient_PublishingSuccess() {
 		EnablemTLS:    true,
 		CollectorHost: "localhost",
 		CollectorPort: 8081,
-		Cert:          "../../../test/certs/client-cert.pem",
-		Key:           "../../../test/certs/client-key.pem",
-		CA:            "../../../test/certs/ca-cert.pem",
+		Cert:          "./test/certs/client-cert.pem",
+		Key:           "./test/certs/client-key.pem",
+		CA:            "./test/certs/ca-cert.pem",
 	})
 
 	suite.NoError(err)
