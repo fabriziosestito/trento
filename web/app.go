@@ -125,7 +125,8 @@ func InitDB() (*gorm.DB, error) {
 func MigrateDB(db *gorm.DB) error {
 	err := db.AutoMigrate(
 		models.Tag{}, models.SelectedChecks{}, models.ConnectionSettings{}, models.CheckRaw{},
-		models.Cluster{}, datapipeline.DataCollectedEvent{}, datapipeline.Subscription{})
+		models.Cluster{}, datapipeline.DataCollectedEvent{}, datapipeline.Subscription{}, models.Telemetry{})
+
 	if err != nil {
 		return err
 	}
