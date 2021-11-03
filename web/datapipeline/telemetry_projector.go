@@ -1,15 +1,11 @@
 package datapipeline
 
 import (
-	"bytes"
-	"encoding/json"
-
 	log "github.com/sirupsen/logrus"
 	discoveryModels "github.com/trento-project/trento/agent/discovery/models"
 	"github.com/trento-project/trento/internal/cloud"
 	"github.com/trento-project/trento/internal/subscription"
 	"github.com/trento-project/trento/web/models"
-	"gorm.io/datatypes"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -86,14 +82,6 @@ func telemetryProjector_SubscriptionDiscoveryHandler(dataCollectedEvent *DataCol
 	}
 
 	return storeTelemetry(db, telemetryReadModel, "sles_version")
-}
-
-func payloadDecoder(payload datatypes.JSON) *json.Decoder {
-	data, _ := payload.MarshalJSON()
-	decoder := json.NewDecoder(bytes.NewReader(data))
-	decoder.DisallowUnknownFields()
-
-	return decoder
 }
 
 func storeTelemetry(db *gorm.DB, telemetryReadModel models.Telemetry, updateProperties ...string) error {
