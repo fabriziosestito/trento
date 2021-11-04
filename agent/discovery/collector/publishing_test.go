@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/spf13/afero"
 	"github.com/spf13/viper"
@@ -18,6 +19,7 @@ import (
 
 type PublishingTestSuite struct {
 	suite.Suite
+	discoveryPeriod  time.Duration
 	configuredClient *client
 }
 
@@ -27,7 +29,7 @@ func TestPublishingTestSuite(t *testing.T) {
 
 func (suite *PublishingTestSuite) SetupSuite() {
 	fileSystem = afero.NewMemMapFs()
-
+	suite.discoveryPeriod = 2 * time.Minute
 	afero.WriteFile(fileSystem, machineIdPath, []byte("the-machine-id"), 0644)
 
 	// this is read by an env variable called TRENTO_COLLECTOR_ENABLED
@@ -40,7 +42,7 @@ func (suite *PublishingTestSuite) SetupSuite() {
 		Cert:          "./test/certs/client-cert.pem",
 		Key:           "./test/certs/client-key.pem",
 		CA:            "./test/certs/ca-cert.pem",
-	})
+	}, suite.discoveryPeriod)
 	suite.NoError(err)
 
 	suite.configuredClient = collectorClient
@@ -93,9 +95,10 @@ func (suite *PublishingTestSuite) runDiscoveryScenario(discoveryType string, pay
 
 	collectorClient.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
 		requestBody, _ := json.Marshal(map[string]interface{}{
-			"agent_id":       agentID,
-			"discovery_type": discoveryType,
-			"payload":        payload,
+			"agent_id":         agentID,
+			"discovery_period": suite.discoveryPeriod,
+			"discovery_type":   discoveryType,
+			"payload":          payload,
 		})
 
 		outgoingRequestBody, _ := ioutil.ReadAll(req.Body)

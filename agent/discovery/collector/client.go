@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -21,9 +22,10 @@ type Client interface {
 }
 
 type client struct {
-	config     *Config
-	machineID  string
-	httpClient *http.Client
+	config          *Config
+	discoveryPeriod time.Duration
+	machineID       string
+	httpClient      *http.Client
 }
 
 type Config struct {
@@ -39,7 +41,7 @@ const machineIdPath = "/etc/machine-id"
 
 var fileSystem = afero.NewOsFs()
 
-func NewCollectorClient(config *Config) (*client, error) {
+func NewCollectorClient(config *Config, discoveryPeriod time.Duration) (*client, error) {
 	var tlsConfig *tls.Config
 	var err error
 
@@ -65,9 +67,10 @@ func NewCollectorClient(config *Config) (*client, error) {
 	machineID := strings.TrimSpace(string(machineIDBytes))
 
 	return &client{
-		config:     config,
-		httpClient: httpClient,
-		machineID:  machineID,
+		config:          config,
+		discoveryPeriod: discoveryPeriod,
+		machineID:       machineID,
+		httpClient:      httpClient,
 	}, nil
 }
 
@@ -80,9 +83,10 @@ func (c *client) Publish(discoveryType string, payload interface{}) error {
 	log.Debugf("Sending %s to data collector", discoveryType)
 
 	requestBody, err := json.Marshal(map[string]interface{}{
-		"agent_id":       c.machineID,
-		"discovery_type": discoveryType,
-		"payload":        payload,
+		"agent_id":         c.machineID,
+		"discovery_type":   discoveryType,
+		"discovery_period": c.discoveryPeriod,
+		"payload":          payload,
 	})
 	if err != nil {
 		return err

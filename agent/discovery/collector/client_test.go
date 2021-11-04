@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/spf13/afero"
 	"github.com/spf13/viper"
@@ -15,6 +16,7 @@ import (
 
 type CollectorClientTestSuite struct {
 	suite.Suite
+	discoveryPeriod time.Duration
 }
 
 func TestCollectorClientTestSuite(t *testing.T) {
@@ -23,7 +25,7 @@ func TestCollectorClientTestSuite(t *testing.T) {
 
 func (suite *CollectorClientTestSuite) SetupSuite() {
 	fileSystem = afero.NewMemMapFs()
-
+	suite.discoveryPeriod = 2 * time.Minute
 	afero.WriteFile(fileSystem, machineIdPath, []byte("the-machine-id"), 0644)
 
 	// this is read by an env variable called TRENTO_COLLECTOR_ENABLED
@@ -38,7 +40,7 @@ func (suite *CollectorClientTestSuite) TestCollectorClient_NewClientWithTLS() {
 		Cert:          "./test/certs/client-cert.pem",
 		Key:           "./test/certs/client-key.pem",
 		CA:            "./test/certs/ca-cert.pem",
-	})
+	}, suite.discoveryPeriod)
 
 	suite.NoError(err)
 
@@ -55,7 +57,7 @@ func (suite *CollectorClientTestSuite) TestCollectorClient_NewClientWithoutTLS()
 		Cert:          "",
 		Key:           "",
 		CA:            "",
-	})
+	}, suite.discoveryPeriod)
 
 	suite.NoError(err)
 
@@ -72,7 +74,7 @@ func (suite *CollectorClientTestSuite) TestCollectorClient_PublishingSuccess() {
 		Cert:          "./test/certs/client-cert.pem",
 		Key:           "./test/certs/client-key.pem",
 		CA:            "./test/certs/ca-cert.pem",
-	})
+	}, suite.discoveryPeriod)
 
 	suite.NoError(err)
 
@@ -87,9 +89,10 @@ func (suite *CollectorClientTestSuite) TestCollectorClient_PublishingSuccess() {
 
 	collectorClient.httpClient.Transport = helpers.RoundTripFunc(func(req *http.Request) *http.Response {
 		requestBody, _ := json.Marshal(map[string]interface{}{
-			"agent_id":       agentID,
-			"discovery_type": discoveryType,
-			"payload":        discoveredDataPayload,
+			"agent_id":         agentID,
+			"discovery_period": suite.discoveryPeriod,
+			"discovery_type":   discoveryType,
+			"payload":          discoveredDataPayload,
 		})
 
 		bodyBytes, _ := ioutil.ReadAll(req.Body)
@@ -112,7 +115,7 @@ func (suite *CollectorClientTestSuite) TestCollectorClient_PublishingFailure() {
 		EnablemTLS:    false,
 		CollectorHost: "localhost",
 		CollectorPort: 8081,
-	})
+	}, suite.discoveryPeriod)
 
 	suite.NoError(err)
 

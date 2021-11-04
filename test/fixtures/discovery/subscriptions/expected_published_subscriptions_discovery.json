@@ -1,5 +1,6 @@
 {
     "agent_id": "the-machine-id",
+    "discovery_period": 120000000000,
     "discovery_type": "subscription_discovery",
     "payload": [
         {

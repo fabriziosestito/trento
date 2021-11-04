@@ -44,7 +44,7 @@ func NewAgent(config *Config) (*Agent, error) {
 		return nil, errors.Wrap(err, "could not create a Consul client")
 	}
 
-	collectorClient, err := collector.NewCollectorClient(config.CollectorConfig)
+	collectorClient, err := collector.NewCollectorClient(config.CollectorConfig, config.DiscoveryPeriod)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not create a collector client")
 	}
