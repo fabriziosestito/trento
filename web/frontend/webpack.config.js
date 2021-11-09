@@ -8,6 +8,7 @@ const stylesHandler = 'style-loader';
 const config = {
   entry: {
     check_results: './javascripts/check_results.js',
+    host_list: './javascripts/host_list.js',
   },
   output: {
     path: path.resolve(__dirname, 'assets/js'),
