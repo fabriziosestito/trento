@@ -3,12 +3,17 @@ package agent
 import (
 	"context"
 	"fmt"
+	"os"
+	"os/exec"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/fabriziosestito/phxgoclient"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 
 	"github.com/trento-project/trento/agent/discovery"
 	"github.com/trento-project/trento/agent/discovery/collector"
@@ -76,6 +81,14 @@ func (a *Agent) Start() error {
 		log.Info("heartbeat loop stopped.")
 	}(&wg)
 
+	wg.Add(1)
+	go func(wg *sync.WaitGroup) {
+		log.Info("Starting checks handler...")
+		defer wg.Done()
+		a.startChecksHandler()
+		log.Info("checks loop stopped.")
+	}(&wg)
+
 	wg.Wait()
 
 	return nil
@@ -114,4 +127,52 @@ func (a *Agent) startHeartbeatTicker() {
 	}
 
 	internal.Repeat("agent.heartbeat", tick, internal.HeartbeatInterval, a.ctx)
+}
+
+func (a *Agent) startChecksHandler() {
+	machineIDBytes, _ := afero.ReadFile(afero.NewOsFs(), "/etc/machine-id")
+
+	machineID := strings.TrimSpace(string(machineIDBytes))
+	agentID := uuid.NewSHA1(internal.TrentoNamespace, []byte(machineID))
+	fmt.Println(agentID)
+	url := fmt.Sprintf("%s:%d", a.config.CollectorConfig.CollectorHost, a.config.CollectorConfig.CollectorPort)
+	socket := phxgoclient.NewPheonixWebsocket(url, "/socket", "ws", false)
+	socket.Listen()
+
+	topic := fmt.Sprintf("monitoring:agent_%s", agentID)
+	channel, err := socket.OpenChannel(topic)
+	if err != nil {
+		log.Fatalf("Error while opening the channel: %s", err)
+	}
+
+	socket.JoinChannel(topic, nil)
+	channel.Register("checks_execution_requested", func(response phxgoclient.MessageResponse) (data interface{}, err error) {
+		// TODO: Ansible here
+		println(response.Event)
+		cmd := exec.Command("ansible-playbook", "./runner/ansible/check.yml")
+		cmd.Env = os.Environ()
+		cmd.Env = append(
+			cmd.Env, fmt.Sprintf("TRENTO_WEB_API_HOST=%s TRENTO_WEB_API_PORT=%d",
+				a.config.CollectorConfig.CollectorHost,
+				a.config.CollectorConfig.CollectorPort))
+
+		out, err := cmd.Output()
+		if err != nil {
+			log.Errorf("An error occurred while running ansible: %s", err)
+
+			return nil, err
+		}
+		fmt.Printf("%s\n", out)
+
+		return response, nil
+	})
+
+	for {
+		select {
+		case <-a.ctx.Done():
+			return
+		default:
+			channel.Observe()
+		}
+	}
 }
