@@ -2,11 +2,15 @@ package agent
 
 import (
 	"context"
+	"embed"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 	"sync"
+	"text/template"
 	"time"
 
 	"github.com/fabriziosestito/phxgoclient"
@@ -129,7 +133,13 @@ func (a *Agent) startHeartbeatTicker() {
 	internal.Repeat("agent.heartbeat", tick, internal.HeartbeatInterval, a.ctx)
 }
 
+const inventoryTemplate = `
+[{{.ClusterID}}]
+{{.HostID}} ansible_connection=local ansible_host=localhost cluster_selected_checks=[{{ range .Checks}}"{{.}}",{{end}}]
+`
+
 func (a *Agent) startChecksHandler() {
+	createAnsibleFiles("/tmp/trento")
 	machineIDBytes, _ := afero.ReadFile(afero.NewOsFs(), "/etc/machine-id")
 
 	machineID := strings.TrimSpace(string(machineIDBytes))
@@ -147,16 +157,30 @@ func (a *Agent) startChecksHandler() {
 
 	socket.JoinChannel(topic, nil)
 	channel.Register("checks_execution_requested", func(response phxgoclient.MessageResponse) (data interface{}, err error) {
-		// TODO: Ansible here
-		println(response.Event)
-		cmd := exec.Command("ansible-playbook", "./runner/ansible/check.yml")
+		template := template.Must(template.New("").Parse(inventoryTemplate))
+		f, err := os.Create("/tmp/trento/ansible/inventory")
+		if err != nil {
+			panic(err)
+		}
+		err = template.Execute(f, map[string]interface{}{
+			"ClusterID": response.Payload.Response.(map[string]interface{})["cluster_id"].(string),
+			"HostID":    response.Payload.Response.(map[string]interface{})["host_id"].(string),
+			"Checks":    response.Payload.Response.(map[string]interface{})["checks"],
+		})
+		if err != nil {
+			panic(err)
+		}
+		f.Close()
+
+		cmd := exec.Command("ansible-playbook", "/tmp/trento/ansible/check.yml", "-i", "/tmp/trento/ansible/inventory", "--check")
 		cmd.Env = os.Environ()
 		cmd.Env = append(
-			cmd.Env, fmt.Sprintf("TRENTO_WEB_API_HOST=%s TRENTO_WEB_API_PORT=%d",
-				a.config.CollectorConfig.CollectorHost,
-				a.config.CollectorConfig.CollectorPort))
+			cmd.Env, fmt.Sprintf("TRENTO_WEB_API_HOST=%s", a.config.CollectorConfig.CollectorHost))
 
+		cmd.Env = append(
+			cmd.Env, fmt.Sprintf("TRENTO_WEB_API_PORT=%d", a.config.CollectorConfig.CollectorPort))
 		out, err := cmd.Output()
+
 		if err != nil {
 			log.Errorf("An error occurred while running ansible: %s", err)
 
@@ -175,4 +199,56 @@ func (a *Agent) startChecksHandler() {
 			channel.Observe()
 		}
 	}
+}
+
+//go:embed ansible
+var ansibleFS embed.FS
+
+func createAnsibleFiles(folder string) error {
+	log.Infof("Creating the ansible file structure in %s", folder)
+	// Clean the folder if it stores old files
+	ansibleFolder := path.Join(folder, "ansible")
+	err := os.RemoveAll(ansibleFolder)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	err = os.MkdirAll(ansibleFolder, 0755)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	// Create the ansible file structure from the FS
+	err = fs.WalkDir(ansibleFS, "ansible", func(fileName string, dir fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !dir.IsDir() {
+			content, err := ansibleFS.ReadFile(fileName)
+			if err != nil {
+				log.Errorf("Error reading file %s", fileName)
+				return err
+			}
+			f, err := os.Create(path.Join(folder, fileName))
+			if err != nil {
+				log.Errorf("Error creating file %s", fileName)
+				return err
+			}
+			fmt.Fprintf(f, "%s", content)
+		} else {
+			os.Mkdir(path.Join(folder, fileName), 0755)
+		}
+		return nil
+	})
+
+	if err != nil {
+		log.Errorf("An error ocurred during the ansible file structure creation: %s", err)
+		return err
+	}
+
+	log.Info("Ansible file structure successfully created")
+
+	return nil
 }
