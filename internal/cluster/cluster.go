@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/trento-project/trento/internal"
 
 	// These packages were originally imported from github.com/ClusterLabs/ha_cluster_exporter/collector/pacemaker
@@ -72,12 +73,13 @@ func NewClusterWithDiscoveryTools(discoveryTools *DiscoveryTools) (Cluster, erro
 	}
 
 	cluster.Crmmon = crmmonConfig
-
 	// Set MD5-hashed key based on the corosync auth key
-	cluster.Id, err = getCorosyncAuthkeyMd5(discoveryTools.CorosyncKeyPath)
+
+	id, err := getCorosyncAuthkeyMd5(discoveryTools.CorosyncKeyPath)
 	if err != nil {
 		return cluster, err
 	}
+	cluster.Id = uuid.NewSHA1(internal.TrentoNamespace, []byte(id)).String()
 
 	cluster.Name = getName(cluster)
 
